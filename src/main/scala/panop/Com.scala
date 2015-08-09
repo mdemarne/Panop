@@ -16,7 +16,7 @@ object Com {
   }
 
   case class Search(url: Url, query: Query)
-  case class Result(search: Search, contains: Boolean, links: String)
+  case class Result(search: Search, isPositive: Boolean, links: List[String])
 
   case class StartSearch(url: Url, query: Query, depth: Int)
   case object DisplayResults
