@@ -15,7 +15,7 @@ object Com {
     override def toString = link.toString
   }
 
-  case class Search(url: Url, query: Query)
+  case class Search(url: Url, query: Query, maxDepth: Int)
   case class Result(search: Search, isPositive: Boolean, links: List[String])
 
   case class StartSearch(url: Url, query: Query, depth: Int)

@@ -16,10 +16,16 @@ class Slave extends Actor with ActorLogging {
   import Com._
 
   def receive = {
-    case Search(url, query) =>
+    case Search(url, query, _) =>
       Try(Http(url.link).asString) match {
-        case Success(resp) => ???
-          // TODO: extract urls
+        case Success(res) => ???
+          val urlPattern = """href=""""".r
+          val urlPrefixPattern = ??? // TODO
+          val urlPrefix = "" // TODO
+          val urlStrs = urlPattern.findAllIn(res.body).map(_.drop(6).dropRight(1)) map { str =>
+            if (str.startsWith("http")) str
+            else urlPrefix + str
+          }
           // TODO: check existence
         case Failure(err) =>
           log.error(s"Could not get data for $url")

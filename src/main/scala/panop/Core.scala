@@ -10,7 +10,6 @@ class Core(sys: ActorSystem) extends Actor with ActorLogging {
 
   /* Parameters */
   private var maxSlaves: Int = 200
-  private var maxDepth: Int = 0
 
   /* Stacks */
   private var urls = List[Search]()
@@ -20,12 +19,10 @@ class Core(sys: ActorSystem) extends Actor with ActorLogging {
   private var slaves = (0 until maxSlaves) map (ii => sys.actorOf(Props[Slave], s"slave$ii"))
 
   def receive = {
-    case StartSearch(url, query, depth) =>
-      maxDepth = depth
-
+    case StartSearch(url, query, maxDepth) =>
       val head = slaves.head
       slaves = slaves.tail
-      head ! Search(url, query)
+      head ! Search(url, query, maxDepth)
 
     case DisplayResults =>
       results foreach (r => log.info(r.search.url.link)) // TODO: filter by query
@@ -36,10 +33,15 @@ class Core(sys: ActorSystem) extends Actor with ActorLogging {
         results :+= res
         log.info(s"Page $search matches.")
       }
-
       /* Saving links */
-      if (search.url.depth < maxDepth) urls :::= links map (l => Search(Url(l, search.url.depth), search.query))
-      
-    // TODO: restart slaves if required
+      if (search.url.depth < search.maxDepth) urls :::= links map (l => search.copy(url = Url(l, search.url.depth + 1)))
+      /* Restarting on urls */
+      slaves +:= sender
+      if (!urls.isEmpty) {
+        (slaves zip urls) foreach { tpl =>
+          slaves = slaves.filter(_ != tpl._1)
+          tpl._1 ! tpl._2
+        }
+      }
   }
 }
