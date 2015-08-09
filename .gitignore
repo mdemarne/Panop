@@ -1,0 +1,6 @@
+project/target/
+target/
+*.swo
+*.swp
+*.class
+.idea
