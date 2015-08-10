@@ -6,11 +6,6 @@ package panop
  */
 object Com {
 
-  /* Pos and Neg are in disjunctive normal form */
-  case class Query(pos: Seq[Seq[String]], neg: Seq[Seq[String]]) {
-    override def toString = ??? // TODO
-  }
-
   case class Url(link: String, depth: Int) {
     override def toString = link.toString
   }
