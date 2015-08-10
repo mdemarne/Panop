@@ -22,15 +22,14 @@ class Slave extends Actor with ActorLogging {
           val body = t2.toString
           val linkPattern = "href=(\"|\')[^\"\']+(\"|\')".r
           val linkPrefix = url.link.split("/").take(3).mkString("/") // TODO: this is uggly
-          val links = linkPattern.findAllIn(body).map(_.drop(6).dropRight(1)).toList map { str =>
+          val links = (linkPattern.findAllIn(body).map(_.drop(6).dropRight(1)) map { str =>
             if (str.startsWith("http")) str
             else linkPrefix + (if(str.startsWith("/")) "" else "/") + str
-          }
+          }).toSet
           val filteredLinks = if (query.linkPrefix.isEmpty) links else {
             links filter (link => link.startsWith(query.linkPrefix.get))
           }
           val isPositive = query.matches(body)
-          log.info(s"${url.link} done, found ${filteredLinks.size} urls, ${if (isPositive) "matches" else "does not match"}")
           sender ! Result(search, isPositive, filteredLinks)
         case Failure(err) =>
           log.error(s"Could not get data for $url")

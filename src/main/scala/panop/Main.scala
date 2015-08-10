@@ -15,7 +15,8 @@ object Main {
   def main(args: Array[String]) = {
     // TODO: this is test bullshit
     val master = asys.actorOf(Props(new Master(asys)))
-    master ! StartSearch(Url("https://www.admin.ch/opc/fr/classified-compilation/national.html"), Query(("Peuple" :: Nil) :: Nil, Nil, 10, Some("https://www.admin.ch/opc/fr/classified-compilation")))
+    //master ! StartSearch(Url("https://www.admin.ch/opc/fr/classified-compilation/national.html"), Query(("Peuple" :: Nil) :: Nil, Nil, 10, Some("https://www.admin.ch/opc/fr/classified-compilation")))
+    master ! StartSearch(Url("http://www.lemonde.fr"), Query(("Suisse" :: Nil) :: ("suisse" :: Nil) :: Nil, Nil, 10, Some("http://www.lemonde.fr")))
     while(true) {
       Thread.sleep(10000)
       master ! DisplayResults
