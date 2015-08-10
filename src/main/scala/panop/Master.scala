@@ -13,19 +13,23 @@ class Master(asys: ActorSystem) extends Actor with ActorLogging {
 
   /* Stacks */
   private var urls = List[Search]()
+  private var foundLinks = List[String]()
   private var results = List[Result]()
 
   /* Pool */
-  private var slaves = (0 until maxSlaves) map (ii => asys.actorOf(Props[Slave], s"slave$ii"))
+  private var slaves = (0 until maxSlaves) map (ii => asys.actorOf(Props(new Slave)))
 
   def receive = {
-    case StartSearch(url, query, maxDepth) =>
+    case StartSearch(url, query) =>
       val head = slaves.head
       slaves = slaves.tail
-      head ! Search(url, query, maxDepth)
+      head ! Search(url, query)
 
     case DisplayResults =>
-      results foreach (r => log.info(r.search.url.link)) // TODO: filter by query
+      log.info("---------------------------------------------")
+      log.info("Displaying results...")
+      results foreach (r => log.info("\t" + r.search.url.link)) // TODO: filter by query
+      log.info("---------------------------------------------")
 
     case res @ Result(search, isPositive, links) =>
       /* Saving results */
@@ -34,15 +38,21 @@ class Master(asys: ActorSystem) extends Actor with ActorLogging {
         log.info(s"Page $search matches.")
       }
       /* Saving links */
-      // TODO: filtering out .js file and such
-      if (search.url.depth < search.maxDepth) urls :::= links map (l => search.copy(url = Url(l, search.url.depth + 1)))
+      if (search.url.depth < search.query.maxDepth) {
+        val properLinks = links filter (!_.endsWith(search.query.ignoredFileExtensions))
+        val filteredLinks = properLinks filter (url => !foundLinks.contains(url))
+        foundLinks :::= filteredLinks
+        urls :::= filteredLinks map (l => search.copy(url = Url(l, search.url.depth + 1)))
+      }
       /* Restarting on urls */
       slaves +:= sender
       if (!urls.isEmpty) { // TODO: avoid searching multiple time the same URL
-        (slaves zip urls) foreach { tpl =>
+        val tpls = (slaves zip urls) 
+        tpls foreach { tpl =>
           slaves = slaves.filter(_ != tpl._1)
           tpl._1 ! tpl._2
         }
+        urls = urls.drop(tpls.size)
       }
   }
 }

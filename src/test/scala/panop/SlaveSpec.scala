@@ -9,8 +9,8 @@ class SlaveSpec extends FlatSpec {
 
   val asys = ActorSystem.create("SlaveSpecSys")
   "A Slave" should "extract proper links and check query" in {
-    val slave = asys.actorOf(Props[Slave], "slave01")
-    slave !? Search(Url("https://www.google.ch/", 0), Query("Google"), 0) match {
+    val slave = asys.actorOf(Props(new Slave))
+    slave !? Search(Url("https://www.google.ch/", 0), Query("Google", 0)) match {
       case res: Result =>
         println(res)
         assert(res.isPositive)
@@ -18,8 +18,8 @@ class SlaveSpec extends FlatSpec {
     }
   }
   it should "do the samething on other simpler websites" in {
-    val slave = asys.actorOf(Props[Slave], "slave02")
-    slave !? Search(Url("https://www.admin.ch/opc/fr/classified-compilation/national.html", 0), Query("Etat" :: "Peuple" :: Nil), 0) match {
+    val slave = asys.actorOf(Props(new Slave))
+    slave !? Search(Url("https://www.admin.ch/opc/fr/classified-compilation/national.html", 0), Query("Etat" :: "Peuple" :: Nil, 0)) match {
       case res: Result =>
         println(res)
         assert(res.isPositive)
