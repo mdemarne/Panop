@@ -11,7 +11,8 @@ case class Query(
   poss: Seq[Seq[String]], 
   negs: Seq[Seq[String]], 
   maxDepth: Int,
-  ignoredFileExtensions: Seq[String] = ".js" :: ".css" :: Nil,  // TODO: remove hard coded
+  linkPrefix: Option[String],
+  ignoredFileExtensions: Regex = "js|css|pdf|png|jpg|gif|jpeg".r,  // TODO: remove hard coded
   boundaries: (Regex, Regex) = ("<body>|<BODY>".r, "</body>|<BODY>".r)) { // TODO: idem
 
   private def printNormalForm(nls: Seq[Seq[String]]) = nls.map(_.map(_.toString).mkString(" ^ ")).mkString(" ∩ ")
@@ -25,6 +26,9 @@ case class Query(
 }
 
 object Query {
-  def apply(pos: Seq[String], maxDepth: Int): Query = Query(pos :: Nil, Nil, maxDepth)
-  def apply(w: String, maxDepth: Int): Query = Query((w :: Nil) :: Nil, Nil, maxDepth)
+  def apply(pos: Seq[String], maxDepth: Int): Query = Query(pos :: Nil, Nil, maxDepth, None)
+  def apply(w: String, maxDepth: Int): Query = Query((w :: Nil) :: Nil, Nil, maxDepth, None)
+
+  def apply(pos: Seq[String], maxDepth: Int, linkPrefix: String): Query = Query(pos :: Nil, Nil, maxDepth, Some(linkPrefix))
+  def apply(w: String, maxDepth: Int, linkPrefix: String): Query = Query((w :: Nil) :: Nil, Nil, maxDepth, Some(linkPrefix))
 }

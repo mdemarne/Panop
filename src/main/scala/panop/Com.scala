@@ -15,6 +15,7 @@ object Com {
 
   case class Search(url: Url, query: Query)
   case class Result(search: Search, isPositive: Boolean, links: List[String])
+  case class Failed(search: Search)
 
   case class StartSearch(url: Url, query: Query)
   case object DisplayResults
