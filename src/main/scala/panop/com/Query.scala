@@ -1,4 +1,5 @@
 package panop
+package com
 
 import scala.util.matching.Regex
 

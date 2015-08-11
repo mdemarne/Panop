@@ -6,7 +6,7 @@ import akka.actor._
  * @author Mathieu Demarne (mathieu.demarne@gmail.com)
  */
 class Master(asys: ActorSystem) extends Actor with ActorLogging {
-  import Com._
+  import com._
 
   /* Parameters */
   // TODO: remove hard coded

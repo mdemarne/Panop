@@ -7,7 +7,7 @@ import akka.actor._
  * @author Mathieu Demarne (mathieu.demarne@gmail.com)
  */
 object Main {
-  import Com._
+  import com._
   import Enrichments._
 
   val asys = ActorSystem.create("SlaveSpecSys")

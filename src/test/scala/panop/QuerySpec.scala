@@ -1,6 +1,6 @@
 import org.scalatest._
 import scalaj.http._
-import panop._
+import panop.com._
 
 class QuerySpec extends FlatSpec {
   "A Query" should "match 01" in {

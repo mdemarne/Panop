@@ -4,7 +4,7 @@ package panop
  * Contains a few communication case classes.
  * @author Mathieu Demarne (mathieu.demarne@gmail.com)
  */
-object Com {
+package object com {
 
   case class Url(link: String, depth: Int) {
     override def toString = link.toString

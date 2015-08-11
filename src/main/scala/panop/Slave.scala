@@ -11,7 +11,7 @@ import scalaj.http._
  */
 // TODO: allow "focus" on some part of a page only
 class Slave extends Actor with ActorLogging {
-  import Com._
+  import com._
 
   def receive = {
     case search @ Search(url, query) =>
