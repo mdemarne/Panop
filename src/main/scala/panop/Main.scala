@@ -28,9 +28,9 @@ object Main {
       Nil, Nil, 10, Some("https://www.admin.ch/opc/fr/classified-compilation"))*/
     val query = Query(("Alphabet" :: "Google" :: Nil) :: Nil, Nil, 10000, None)
     println(query)
-    master ! StartSearch(Url("https://news.google.com/"), query)
-    //master ! StartSearch(Url("https://www.admin.ch/opc/fr/classified-compilation/national.html"), query)
-    //master ! StartSearch(Url("http://www.lemonde.fr"), Query(("Suisse" :: Nil) :: ("suisse" :: Nil) :: Nil, Nil, 10, Some("http://www.lemonde.fr")))
+    master ! Search(Url("https://news.google.com/"), query)
+    //master ! Search(Url("https://www.admin.ch/opc/fr/classified-compilation/national.html"), query)
+    //master ! Search(Url("http://www.lemonde.fr"), Query(("Suisse" :: Nil) :: ("suisse" :: Nil) :: Nil, Nil, 10, Some("http://www.lemonde.fr")))
     while(true) {
       Thread.sleep(10000)
       master ! DisplayResults

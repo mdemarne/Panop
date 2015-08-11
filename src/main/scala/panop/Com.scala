@@ -1,7 +1,7 @@
 package panop
 
 /**
- * Contains a few communication means
+ * Contains a few communication case classes.
  * @author Mathieu Demarne (mathieu.demarne@gmail.com)
  */
 object Com {
@@ -16,7 +16,5 @@ object Com {
   case class Search(url: Url, query: Query)
   case class Result(search: Search, isPositive: Boolean, links: Set[String])
   case class Failed(search: Search)
-
-  case class StartSearch(url: Url, query: Query)
   case object DisplayResults
 }
