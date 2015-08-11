@@ -9,7 +9,8 @@ class Master(asys: ActorSystem) extends Actor with ActorLogging {
   import Com._
 
   /* Parameters */
-  private var maxSlaves: Int = 200 // TODO: Based on experiment, the JVM has difficulties to support more than 1000 slaves
+  // TODO: remove hard coded
+  private var maxSlaves: Int = 200 // TODO: Based on experiment, the JVM has difficulties to support more than 1000 slaves.
 
   /* Stacks */
   private var urls = List[Search]()
@@ -64,7 +65,7 @@ class Master(asys: ActorSystem) extends Actor with ActorLogging {
   /** Start all available slaves on all available queued urls */
   private def startRound = {
     if (!urls.isEmpty) { // TODO: avoid searching multiple time the same URL
-      val tpls = (slaves zip urls) 
+      val tpls = (slaves zip urls)
       slaves = slaves.drop(tpls.size)
       urls = urls.drop(tpls.size)
       tpls foreach (tpl => tpl._1 ! tpl._2)

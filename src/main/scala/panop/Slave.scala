@@ -1,7 +1,7 @@
 package panop
 
 import akka.actor._
-import scala.util.{Try, Success, Failure}
+import scala.util.{ Try, Success, Failure }
 
 import scalaj.http._
 
@@ -9,7 +9,7 @@ import scalaj.http._
  * Extracts data and do a local search once at a time.
  * @author Mathieu Demarne (mathieu.demarne@gmail.com)
  */
- // TODO: allow "focus" on some part of a page only
+// TODO: allow "focus" on some part of a page only
 class Slave extends Actor with ActorLogging {
   import Com._
 
@@ -25,13 +25,13 @@ class Slave extends Actor with ActorLogging {
           /* Check if the depth as been reached */
           val newLinks: Set[String] = url.depth match {
             case d if d <= query.maxDepth => Set()
-            case d => 
+            case d =>
               /* get all links, append prefix if required */
               val linkPattern = "href=(\"|\')[^\"\']+(\"|\')".r
               val linkPrefix = url.link.split("/").take(3).mkString("/") // TODO: this is uggly
               val absoluteLinks = (linkPattern.findAllIn(body).map(_.drop(6).dropRight(1)) map { str =>
                 if (str.startsWith("http")) removeHash(str)
-                else linkPrefix + (if(str.startsWith("/")) "" else "/") + removeHash(str)
+                else linkPrefix + (if (str.startsWith("/")) "" else "/") + removeHash(str)
               }).toSet
               /* Check that all links are still in the required domain */
               val boundedLinks = if (query.linkPrefix.isEmpty) absoluteLinks else {

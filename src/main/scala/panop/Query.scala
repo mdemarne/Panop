@@ -8,15 +8,15 @@ import scala.util.matching.Regex
  * @author Mathieu Demarne (mathieu.demarne@gmail.com)
  */
 case class Query(
-  poss: Seq[Seq[String]], 
-  negs: Seq[Seq[String]], 
+  poss: Seq[Seq[String]],
+  negs: Seq[Seq[String]],
   maxDepth: Int,
   linkPrefix: Option[String],
-  ignoredFileExtensions: Regex = "js|css|pdf|png|jpg|gif|jpeg".r,  // TODO: remove hard coded
-  boundaries: (Regex, Regex) = ("<body>|<BODY>".r, "</body>|<BODY>".r)) { // TODO: idem
+  ignoredFileExtensions: Regex = "js|css|pdf|png|jpg|gif|jpeg|svg|tiff".r, // TODO: remove hard coded
+  boundaries: (Regex, Regex) = ("<body>|<BODY>".r, "</body>|</BODY>".r)) { // TODO: idem
 
   private def printNormalForm(nls: Seq[Seq[String]]) = nls.map(_.map(_.toString).mkString("(", " AND ", ")")).mkString(" OR ")
-  override def toString = " + (" + printNormalForm(poss) + ") - (" +printNormalForm(negs) + ")"
+  override def toString = " + (" + printNormalForm(poss) + ") - (" + printNormalForm(negs) + ")"
   def matches(content: String) = {
     val htmlPattern = "<[^>]+>".r
     val rawText = htmlPattern.replaceAllIn(content, " ")

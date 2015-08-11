@@ -31,7 +31,7 @@ object Main {
     master ! Search(Url("https://news.google.com/"), query)
     //master ! Search(Url("https://www.admin.ch/opc/fr/classified-compilation/national.html"), query)
     //master ! Search(Url("http://www.lemonde.fr"), Query(("Suisse" :: Nil) :: ("suisse" :: Nil) :: Nil, Nil, 10, Some("http://www.lemonde.fr")))
-    while(true) {
+    while (true) {
       Thread.sleep(10000)
       master ! DisplayResults
     }
