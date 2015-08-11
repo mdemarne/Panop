@@ -24,7 +24,7 @@ class Slave extends Actor with ActorLogging {
           val body = t2.toString
           /* Check if the depth as been reached */
           val newLinks: Set[String] = url.depth match {
-            case d if d <= query.maxDepth => Set()
+            case d if d == query.maxDepth => Set()
             case d =>
               /* get all links, append prefix if required */
               val linkPattern = "href=(\"|\')[^\"\']+(\"|\')".r
@@ -42,9 +42,9 @@ class Slave extends Actor with ActorLogging {
               properExtLinks
           }
           /* Searching for page match */
-          val isPositive = query.matches(body)
+          val matches = query.matches(body)
           /* Sending results */
-          sender ! Result(search, isPositive, newLinks)
+          sender ! Result(search, matches, newLinks)
 
         case Failure(err) =>
           log.error(s"Could not get data for $url")

@@ -14,7 +14,10 @@ package object com {
   }
 
   case class Search(url: Url, query: Query)
-  case class Result(search: Search, isPositive: Boolean, links: Set[String])
+  case class Result(search: Search, matches: Seq[Seq[String]], links: Set[String]) {
+    def isPositive = !matches.isEmpty
+  }
   case class Failed(search: Search)
   case object DisplayResults
+  case object DisplayProgress
 }

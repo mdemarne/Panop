@@ -5,12 +5,8 @@ import akka.actor._
  * Master controller for one search run of Panop
  * @author Mathieu Demarne (mathieu.demarne@gmail.com)
  */
-class Master(asys: ActorSystem) extends Actor with ActorLogging {
+class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with ActorLogging {
   import com._
-
-  /* Parameters */
-  // TODO: remove hard coded
-  private var maxSlaves: Int = 200 // TODO: Based on experiment, the JVM has difficulties to support more than 1000 slaves.
 
   /* Stacks */
   private var urls = List[Search]()
@@ -31,6 +27,8 @@ class Master(asys: ActorSystem) extends Actor with ActorLogging {
       urls +:= Search(url, query)
       startRound
 
+    case DisplayProgress => /* TODO */
+
     /* Simply display the results on demand */
     case DisplayResults => // TODO: checkout for log here not log.info
       log.info("---------------------------------------------")
@@ -38,18 +36,18 @@ class Master(asys: ActorSystem) extends Actor with ActorLogging {
       log.info(s"Found ${results.length} matches.")
       log.info(s"${slaves.size} slaves idle (${maxSlaves - slaves.size} active).")
       log.info("Displaying results...")
-      results.sortBy(_.search.url.link.size) foreach (r => log.info("\t" + r.search.url.link)) // TODO: filter by query
+      results.sortBy(_.search.url.link.size) foreach (r => log.info("\t" + r.search.url.link + " [" + Query.printNormalForm(r.matches) + "]")) // TODO: filter by query
       log.info("---------------------------------------------")
 
     /* Process a result coming from a slave */
-    case res @ Result(search, isPositive, links) =>
+    case res @ Result(search, matches, links) =>
       /* Saving results */
-      if (isPositive) results :+= res
+      if (res.isPositive) results :+= res
       /* Saving links, filtered based on duplicates */
       val filteredLinks = links filter (link => !foundLinks.contains(link))
       foundLinks ++= filteredLinks
       urls ++= filteredLinks map (l => search.copy(url = Url(l, search.url.depth + 1)))
-      log.info(s"${search.url.link} done, found ${filteredLinks.size} new urls, ${if (isPositive) "[MATCHES]" else ""}")
+      log.debug(s"${search.url.link} done, found ${filteredLinks.size} new urls, ${if (res.isPositive) "[MATCHES]" else ""}")
       /* Restarting on urls */
       slaves :+= sender
       startRound
