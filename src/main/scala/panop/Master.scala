@@ -13,7 +13,7 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
   private var foundLinks = Set[String]()
   private var results = List[Result]()
   // TODO: in the future, this could be done using simple Akka pools.
-  private var slaves: List[ActorRef] = ((0 until maxSlaves) map (ii => asys.actorOf(Props(new Slave)))).toList
+  private var slaves: List[ActorRef] = ((0 until maxSlaves + 1) map (ii => asys.actorOf(Props(new Slave)))).toList
 
   private def explored = foundLinks.size - urls.size
   private def progress = explored.toDouble / foundLinks.size.toDouble
@@ -27,14 +27,11 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
       urls +:= Search(url, query)
       startRound
 
-    case DisplayProgress => /* TODO */
+    case DisplayProgress => displayProgress
 
     /* Simply display the results on demand */
     case DisplayResults => // TODO: checkout for log here not log.info
-      log.info("---------------------------------------------")
-      log.info(s"Progress: $progress (explored $explored over ${foundLinks.size} links).")
-      log.info(s"Found ${results.length} matches.")
-      log.info(s"${slaves.size} slaves idle (${maxSlaves - slaves.size} active).")
+      displayProgress
       log.info("Displaying results...")
       results.sortBy(_.search.url.link.size) foreach (r => log.info("\t" + r.search.url.link + " [" + Query.printNormalForm(r.matches) + "]")) // TODO: filter by query
       log.info("---------------------------------------------")
@@ -47,7 +44,7 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
       val filteredLinks = links filter (link => !foundLinks.contains(link))
       foundLinks ++= filteredLinks
       urls ++= filteredLinks map (l => search.copy(url = Url(l, search.url.depth + 1)))
-      log.debug(s"${search.url.link} done, found ${filteredLinks.size} new urls, ${if (res.isPositive) "[MATCHES]" else ""}")
+      log.info(s"${search.url.link} done, found ${filteredLinks.size} new urls, ${if (res.isPositive) "[MATCHES]" else ""}") // TODO: change that to debug
       /* Restarting on urls */
       slaves :+= sender
       startRound
@@ -58,6 +55,14 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
       urls :+= search
       slaves :+= sender
       startRound
+  }
+
+  private def displayProgress = {
+    log.info("---------------------------------------------")
+    log.info(s"Progress: $progress (explored $explored over ${foundLinks.size} links).")
+    log.info(s"Found ${results.length} matches.")
+    log.info(s"${slaves.size} slaves idle (${maxSlaves - slaves.size} active).")
+    log.info("---------------------------------------------")
   }
 
   /** Start all available slaves on all available queued urls */

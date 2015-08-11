@@ -3,7 +3,7 @@ package panop
 import akka.actor._
 
 /**
- * Launch and manage research (main loop)
+ * Launch and manage searches (main loop)
  * @author Mathieu Demarne (mathieu.demarne@gmail.com)
  */
 object Main {
@@ -31,7 +31,7 @@ object Main {
     //master ! Search(Url("https://news.google.com/"), query)
     //master ! Search(Url("https://www.admin.ch/opc/fr/classified-compilation/national.html"), query)
     //master ! Search(Url("http://www.lemonde.fr"), Query(("Suisse" :: Nil) :: ("suisse" :: Nil) :: Nil, Nil, 10, Some("http://www.lemonde.fr")))
-    master ! Search(Url("http://localhost:9000/"), Query(("CrossStream" :: "Hebdo" :: Nil) :: Nil, Nil, 1, Some("http://localhost:9000/")))
+    master ! Search(Url("http://localhost:9000/"), Query(("CrossStream" :: "Hebdo" :: Nil) :: Nil, Nil, 10, Some("http://localhost:9000/")))
     while (true) {
       Thread.sleep(10000)
       master ! DisplayResults

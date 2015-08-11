@@ -6,7 +6,7 @@ Some internal search system for website are simply not fast enough.
 Often, external indexed-based search tool are not sufficient either,
 especially when the data is moving fast. 
 
-One way to avoid this is to do online analysis and research: this is what 
+One way to avoid this is to do online analysis and search: this is what 
 Panop is for.
 
 Panop will provide you a slick interface that allow you select the settings
