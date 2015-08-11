@@ -15,13 +15,12 @@ case class Query(
   ignoredFileExtensions: Regex = "js|css|pdf|png|jpg|gif|jpeg".r,  // TODO: remove hard coded
   boundaries: (Regex, Regex) = ("<body>|<BODY>".r, "</body>|<BODY>".r)) { // TODO: idem
 
-  private def printNormalForm(nls: Seq[Seq[String]]) = nls.map(_.map(_.toString).mkString(" ^ ")).mkString(" ∩ ")
+  private def printNormalForm(nls: Seq[Seq[String]]) = nls.map(_.map(_.toString).mkString("(", " AND ", ")")).mkString(" OR ")
   override def toString = " + (" + printNormalForm(poss) + ") - (" +printNormalForm(negs) + ")"
   def matches(content: String) = {
     val htmlPattern = "<[^>]+>".r
     val rawText = htmlPattern.replaceAllIn(content, " ")
-    val tokens = rawText.split(" |,|\\.|\n|\t").filter(_.size > 1).toSet // TODO: remove stop words, etc. Here removing only one-char tokens
-    poss.exists(_.forall(tokens.contains(_))) && (!negs.forall(_.forall(tokens.contains(_))) || negs.isEmpty)
+    poss.exists(_.forall(rawText.contains(_))) && (!negs.forall(_.forall(rawText.contains(_))) || negs.isEmpty)
   }
 }
 

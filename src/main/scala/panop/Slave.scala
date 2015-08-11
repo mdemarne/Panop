@@ -22,9 +22,14 @@ class Slave extends Actor with ActorLogging {
           val body = t2.toString
           val linkPattern = "href=(\"|\')[^\"\']+(\"|\')".r
           val linkPrefix = url.link.split("/").take(3).mkString("/") // TODO: this is uggly
+          def removeHash(str: String) = str match {
+            case "#" => ""
+            case s if s.contains("#") && !s.forall(_ == "#") => s.split("#").init.mkString
+            case _ => str
+          }
           val links = (linkPattern.findAllIn(body).map(_.drop(6).dropRight(1)) map { str =>
-            if (str.startsWith("http")) str
-            else linkPrefix + (if(str.startsWith("/")) "" else "/") + str
+            if (str.startsWith("http")) removeHash(str)
+            else linkPrefix + (if(str.startsWith("/")) "" else "/") + removeHash(str)
           }).toSet
           val filteredLinks = if (query.linkPrefix.isEmpty) links else {
             links filter (link => link.startsWith(query.linkPrefix.get))

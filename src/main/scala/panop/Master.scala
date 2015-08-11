@@ -9,7 +9,7 @@ class Master(asys: ActorSystem) extends Actor with ActorLogging {
   import Com._
 
   /* Parameters */
-  private var maxSlaves: Int = 500
+  private var maxSlaves: Int = 1000
 
   /* Stacks */
   private var urls = List[Search]()

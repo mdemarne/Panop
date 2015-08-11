@@ -15,8 +15,22 @@ object Main {
   def main(args: Array[String]) = {
     // TODO: this is test bullshit
     val master = asys.actorOf(Props(new Master(asys)))
-    //master ! StartSearch(Url("https://www.admin.ch/opc/fr/classified-compilation/national.html"), Query(("Peuple" :: Nil) :: Nil, Nil, 10, Some("https://www.admin.ch/opc/fr/classified-compilation")))
-    master ! StartSearch(Url("http://www.lemonde.fr"), Query(("Suisse" :: Nil) :: ("suisse" :: Nil) :: Nil, Nil, 10, Some("http://www.lemonde.fr")))
+    // Niveau, Geographique, OFS, definition des agglomérations
+    /*val query = Query(
+      ("niveau géographique" :: Nil) :: 
+      ("OFS " :: Nil) ::
+      ("OFS." :: Nil) ::
+      ("OFS)" :: Nil) ::
+      ("OFS," :: Nil) ::
+      ("définition des agglomérations" :: Nil) ::
+      ("Niveau géographique" :: Nil) :: 
+      ("Définition des agglomérations" :: Nil) ::
+      Nil, Nil, 10, Some("https://www.admin.ch/opc/fr/classified-compilation"))*/
+    val query = Query(("Alphabet" :: "Google" :: Nil) :: Nil, Nil, 10000, None)
+    println(query)
+    master ! StartSearch(Url("https://news.google.com/"), query)
+    //master ! StartSearch(Url("https://www.admin.ch/opc/fr/classified-compilation/national.html"), query)
+    //master ! StartSearch(Url("http://www.lemonde.fr"), Query(("Suisse" :: Nil) :: ("suisse" :: Nil) :: Nil, Nil, 10, Some("http://www.lemonde.fr")))
     while(true) {
       Thread.sleep(10000)
       master ! DisplayResults
