@@ -46,13 +46,22 @@ object Main {
       |\t panop
       |
       |SYNOPSIS
-      |\t panop TODO
+      |\t panop [QUERY] [URL] [DOMAIN] [DEPTH] [OPTIONS]
       |
       |DESCRIPTION
       |\t Simple Tool For Parallel Online Search - refer to https://github.com/mdemarne/Panop
       |
       |OPTIONS
-      |\t TODO
+      |\t --help 
+      |\t\t Display this help.
+      |\t --mode=MODE
+      |\t\t Apply various lookup mode for found URLs (BFS, DFS, RND (random)).
+      |\t --ignored-ext=EXTS
+      |\t\t Regex for ignored extensions (Default for all images, PDF, SVG, CSS, Javascript, etc.).
+      |\t --boundaries-top=BOUNDARIES
+      |\t\t Top boundary in which a code will be considered.
+      |\t --boundaries-bottom=BOUNDARIES
+      |\t\t Bottom boundary in which a code will be considered.
     """.stripMargin)
   }
 }

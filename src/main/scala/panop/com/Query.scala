@@ -53,8 +53,14 @@ object QueryParser extends RegexParsers {
       case e ~ e1 => Seq(e) ++ e1.toSeq
     }
   )
-  def parse(str: String): Either[Seq[Seq[String]], String] = {
-    parseAll(disj, str) match {
+  private def tupl: Parser[(Seq[Seq[String]], Seq[Seq[String]])] = (
+    disj ~ opt(("-" ~> disj)) ^^ {
+      case poss ~ Some(negs) => (poss, negs)
+      case poss ~ None => (poss, Seq())
+    }
+  )
+  def parse(str: String): Either[(Seq[Seq[String]], Seq[Seq[String]]), String] = {
+    parseAll(tupl, str) match {
       case Success(t, _) => Left(t)
       case Error(e, r) => Right(e)
       case Failure(e, r) => Right(e)
