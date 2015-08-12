@@ -13,6 +13,7 @@ case class Query(
   negs: Seq[Seq[String]],                                                     
   maxDepth: Int,
   linkPrefix: Option[String],
+  mode: Mode = BFSMode,
   ignoredFileExtensions: Regex = "js|css|pdf|png|jpg|gif|jpeg|svg|tiff".r,
   boundaries: (Regex, Regex) = ("<body>|<BODY>".r, "</body>|</BODY>".r)
 ) {

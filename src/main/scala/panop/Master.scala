@@ -1,6 +1,7 @@
 package panop
 
 import akka.actor._
+
 /**
  * Master controller for one search run of Panop
  * @author Mathieu Demarne (mathieu.demarne@gmail.com)
@@ -30,7 +31,7 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
     case DisplayProgress => displayProgress
 
     /* Simply display the results on demand */
-    case DisplayResults => // TODO: checkout for log here not log.info
+    case DisplayResults =>
       displayProgress
       log.info("Displaying results...")
       results.sortBy(_.search.url.link.size) foreach (r => log.info("\t" + r.search.url.link + " [" + Query.printNormalForm(r.matches) + "]")) // TODO: filter by query
@@ -38,12 +39,15 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
 
     /* Process a result coming from a slave */
     case res @ Result(search, matches, links) =>
+      /* Getting proper search mode */
+      val mw = new ModeWrapper(search.query.mode)
+      import mw._
       /* Saving results */
       if (res.isPositive) results :+= res
       /* Saving links, filtered based on duplicates */
       val filteredLinks = links filter (link => !foundLinks.contains(link))
       foundLinks ++= filteredLinks
-      urls ++= filteredLinks map (l => search.copy(url = Url(l, search.url.depth + 1)))
+      urls = urls ::++ (filteredLinks map (l => search.copy(url = Url(l, search.url.depth + 1)))).toList
       log.info(s"${search.url.link} done, found ${filteredLinks.size} new urls, ${if (res.isPositive) "[MATCHES]" else ""}") // TODO: change that to debug
       /* Restarting on urls */
       slaves :+= sender
@@ -51,8 +55,11 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
 
     /* If a slave has failed to fetch one page, this one will be requeued */
     case Failed(search) =>
+      /* Getting proper search mode */
+      val mw = new ModeWrapper(search.query.mode)
+      import mw._
       // TODO: there should be some notion of repeated failure, and such URLs could be ignored at some point.
-      urls :+= search
+      urls = urls ::+ search
       slaves :+= sender
       startRound
   }
