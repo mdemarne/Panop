@@ -45,4 +45,21 @@ class QuerySpec extends FlatSpec {
     val query = Query(poss, negs, 0, None)
     assert(!query.matches(content).isEmpty)
   }
+
+  "A QueryParser" should "do simple parsing" in {
+    val queryStr = "('TEST 01')"
+    assert(QueryParser.parse(queryStr) == Left(Seq(Seq("TEST 01"))))
+  }
+  it should "do simple conjunctions" in {
+    val queryStr = "('TEST 01' AND 'TEST 02')"
+    assert(QueryParser.parse(queryStr) == Left(Seq(Seq("TEST 01", "TEST 02"))))
+  }
+  it should "do simple disjunctions" in {
+    val queryStr = "('TEST 01') OR ('TEST 02')"
+    assert(QueryParser.parse(queryStr) == Left(Seq(Seq("TEST 01"), Seq("TEST 02"))))
+  }
+  it should "do more complex disjunctions" in {
+    val queryStr = "('TEST 01' AND 'TEST 02') OR ('TEST 03') OR ('TEST 04' AND 'TEST 05' AND 'TEST 06')"
+    assert(QueryParser.parse(queryStr) == Left(Seq(Seq("TEST 01", "TEST 02"), Seq("TEST 03"), Seq("TEST 04", "TEST 05", "TEST 06"))))
+  }
 }

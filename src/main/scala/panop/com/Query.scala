@@ -2,6 +2,7 @@ package panop
 package com
 
 import scala.util.matching.Regex
+import scala.util.parsing.combinator.RegexParsers
 
 /**
  * Query bean.
@@ -36,4 +37,27 @@ object Query {
   def apply(w: String, maxDepth: Int, linkPrefix: String): Query = Query((w :: Nil) :: Nil, Nil, maxDepth, Some(linkPrefix))
 
   def printNormalForm(nls: Seq[Seq[String]]) = nls.map(_.map(_.toString).mkString("(", " AND ", ")")).mkString(" OR ")
+}
+
+object QueryParser extends RegexParsers {
+  private def word: Parser[String] = "'[^']+'".r ^^ { case e => e.tail.init }
+  private def conj: Parser[Seq[String]] = (
+    "(" ~> word ~ ("AND" ~> word).* <~ ")" ^^ {
+      case e ~ Nil => Seq(e)
+      case e ~ e1 => Seq(e) ++ e1.toSeq
+    }
+  )
+  private def disj: Parser[Seq[Seq[String]]] = (
+    conj ~ ("OR" ~> conj).* ^^ {
+      case e ~ Nil => Seq(e)
+      case e ~ e1 => Seq(e) ++ e1.toSeq
+    }
+  )
+  def parse(str: String): Either[Seq[Seq[String]], String] = {
+    parseAll(disj, str) match {
+      case Success(t, _) => Left(t)
+      case Error(e, r) => Right(e)
+      case Failure(e, r) => Right(e)
+    }
+  }
 }

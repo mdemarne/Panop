@@ -14,7 +14,7 @@ object Main {
 
   def main(args: Array[String]) = {
     // TODO: this is test bullshit
-    val master = asys.actorOf(Props(new Master(asys)))
+    val master = asys.actorOf(Props(new Master(asys, 1)))
     // Niveau, Geographique, OFS, definition des agglomérations
     /*val query = Query(
       ("niveau géographique" :: Nil) :: 
@@ -31,10 +31,28 @@ object Main {
     //master ! Search(Url("https://news.google.com/"), query)
     //master ! Search(Url("https://www.admin.ch/opc/fr/classified-compilation/national.html"), query)
     //master ! Search(Url("http://www.lemonde.fr"), Query(("Suisse" :: Nil) :: ("suisse" :: Nil) :: Nil, Nil, 10, Some("http://www.lemonde.fr")))
-    master ! Search(Url("http://localhost:9000/"), Query(("CrossStream" :: "Hebdo" :: Nil) :: ("wall" :: Nil) :: ("Please" :: Nil) :: Nil, Nil, 10, Some("http://localhost:9000/")))
+    master ! Search(Url("http://localhost:9000/"), Query(("CrossStream" :: "Hebdo" :: Nil) :: ("wall" :: Nil) :: ("Please" :: Nil) :: Nil, Nil, 10, Some("http://localhost:9000/"), RNDMode))
     while (true) {
       Thread.sleep(10000)
       master ! DisplayResults
     }
+  }
+
+  def help = {
+    println("""
+      |PANOP
+      |
+      |NAME
+      |\t panop
+      |
+      |SYNOPSIS
+      |\t panop TODO
+      |
+      |DESCRIPTION
+      |\t Simple Tool For Parallel Online Search - refer to https://github.com/mdemarne/Panop
+      |
+      |OPTIONS
+      |\t TODO
+    """.stripMargin)
   }
 }
