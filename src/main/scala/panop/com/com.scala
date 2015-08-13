@@ -13,7 +13,9 @@ package object com {
     def apply(link: String): Url = Url(link, 0)
   }
 
-  case class Search(url: Url, query: Query)
+  case class Search(url: Url, query: Query) {
+    override def toString = s"$query\nOn: $url"
+  }
   case class Result(search: Search, matches: Seq[Seq[String]], links: Set[String]) {
     def isPositive = !matches.isEmpty
   }
