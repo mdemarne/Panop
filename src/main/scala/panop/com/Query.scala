@@ -14,9 +14,9 @@ case class Query(
   negs: Seq[Seq[String]],                                                     
   maxDepth: Int,
   linkPrefix: Option[String],
-  mode: Mode = BFSMode,
-  ignoredFileExtensions: Regex = "js|css|pdf|png|jpg|gif|jpeg|svg|tiff".r,
-  boundaries: (Regex, Regex) = ("<body>|<BODY>".r, "</body>|</BODY>".r)
+  mode: Mode,
+  ignoredFileExtensions: Regex,
+  boundaries: (Regex, Regex)
 ) {
 
   override def toString = " + (" + Query.printNormalForm(poss) + ") - (" + Query.printNormalForm(negs) + ")"
@@ -30,11 +30,21 @@ case class Query(
 }
 
 object Query {
-  def apply(pos: Seq[String], maxDepth: Int): Query = Query(pos :: Nil, Nil, maxDepth, None)
-  def apply(w: String, maxDepth: Int): Query = Query((w :: Nil) :: Nil, Nil, maxDepth, None)
 
-  def apply(pos: Seq[String], maxDepth: Int, linkPrefix: String): Query = Query(pos :: Nil, Nil, maxDepth, Some(linkPrefix))
-  def apply(w: String, maxDepth: Int, linkPrefix: String): Query = Query((w :: Nil) :: Nil, Nil, maxDepth, Some(linkPrefix))
+  val defMode = BFSMode
+  val defIgnExts = "js|css|pdf|png|jpg|gif|jpeg|svg|tiff".r
+  val defTopBnds = "<body>|<BODY>".r
+  val defBotBnds = "</body>|</body>".r
+  val defMaxSlaves = 200
+
+  def apply(pos: Seq[String], maxDepth: Int): Query = Query(pos :: Nil, Nil, maxDepth, None, defMode, defIgnExts, (defTopBnds, defBotBnds))
+  def apply(w: String, maxDepth: Int): Query = Query((w :: Nil) :: Nil, Nil, maxDepth, None, defMode, defIgnExts, (defTopBnds, defBotBnds))
+  
+  def apply(pos: Seq[String], maxDepth: Int, linkPrefix: String): Query = Query(pos :: Nil, Nil, maxDepth, Some(linkPrefix), defMode, defIgnExts, (defTopBnds, defBotBnds))
+  def apply(w: String, maxDepth: Int, linkPrefix: String): Query = Query((w :: Nil) :: Nil, Nil, maxDepth, Some(linkPrefix), defMode, defIgnExts, (defTopBnds, defBotBnds))
+
+  def apply(poss: Seq[Seq[String]], negs: Seq[Seq[String]], maxDepth: Int): Query = Query(poss, negs, maxDepth, None, defMode, defIgnExts, (defTopBnds, defBotBnds))
+  def apply(poss: Seq[Seq[String]], negs: Seq[Seq[String]], maxDepth: Int, linkPrefix: String): Query = Query(poss, negs, maxDepth, Some(linkPrefix), defMode, defIgnExts, (defTopBnds, defBotBnds))
 
   def printNormalForm(nls: Seq[Seq[String]]) = nls.map(_.map(_.toString).mkString("(", " AND ", ")")).mkString(" OR ")
 }
@@ -59,7 +69,7 @@ object QueryParser extends RegexParsers {
       case poss ~ None => (poss, Seq())
     }
   )
-  def parse(str: String): Either[(Seq[Seq[String]], Seq[Seq[String]]), String] = {
+  def apply(str: String): Either[(Seq[Seq[String]], Seq[Seq[String]]), String] = {
     parseAll(tupl, str) match {
       case Success(t, _) => Left(t)
       case Error(e, r) => Right(e)
