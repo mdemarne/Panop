@@ -1,7 +1,7 @@
 package panop
 
 /**
- * Contains a few communication case classes.
+ * Contains a few communication case classes and object.
  * @author Mathieu Demarne (mathieu.demarne@gmail.com)
  */
 package object com {

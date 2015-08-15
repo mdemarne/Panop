@@ -5,7 +5,7 @@ import scala.util.Random
 
 /**
  * Define the type of behavior used to explore urls. 
- * Can be in Breath First Search, Depth First Search, or random
+ * Can be in Breath First Search, Depth First Search, or Random
  * @author Mathieu Demarne (mathieu.demarne@gmail.com)
  */
 trait Mode

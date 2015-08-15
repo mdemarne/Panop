@@ -10,8 +10,7 @@ import scala.concurrent.duration._
 import scala.util.Try
 
 /**
- * Enrichments for application-specific Akka interactions
- *
+ * Enrichments for application-specific Akka interactions.
  * @author Mathieu Demarne (mathieu.demarne@gmail.com)
  */
 object Enrichments {

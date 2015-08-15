@@ -5,7 +5,7 @@ import scala.util.matching.Regex
 import scala.util.parsing.combinator.RegexParsers
 
 /**
- * Query bean.
+ * Query object.
  * Poss and Negs are in disjunctive normal form.
  * @author Mathieu Demarne (mathieu.demarne@gmail.com)
  */
@@ -43,6 +43,7 @@ case class Query(
 
 object Query {
 
+  // TODO: in the future, this could be moved to Akka configuration for instance.
   val defMode = BFSMode
   val defIgnExts = "js|css|pdf|png|jpg|gif|jpeg|svg|tiff".r
   val defTopBnds = "<body>|<BODY>".r

@@ -9,7 +9,6 @@ import scalaj.http._
  * Extracts data and do a local search once at a time.
  * @author Mathieu Demarne (mathieu.demarne@gmail.com)
  */
-// TODO: allow "focus" on some part of a page only
 class Slave extends Actor with ActorLogging {
   import com._
 
@@ -30,8 +29,8 @@ class Slave extends Actor with ActorLogging {
               val linkPattern = "href=(\"|\')[^\"\']+(\"|\')".r
               val domain = url.link.split("/").take(3).mkString("/") // TODO: this is uggly
               val absoluteLinks = (linkPattern.findAllIn(body).map(_.drop(6).dropRight(1)) map { str =>
-                if (str.startsWith("http")) removeHash(str)
-                else domain + (if (str.startsWith("/")) "" else "/") + removeHash(str)
+                if (str.startsWith("http")) removeAncres(str)
+                else domain + (if (str.startsWith("/")) "" else "/") + removeAncres(str)
               }).toSet
               /* Check that all links are still in the required domain */
               val boundedLinks = if (query.domain.isEmpty) absoluteLinks else {
@@ -54,7 +53,7 @@ class Slave extends Actor with ActorLogging {
   }
 
   /* Remove all ancres from code. This is not required: the source code will be the same */
-  private def removeHash(str: String) = str match {
+  private def removeAncres(str: String) = str match {
     case "#" => ""
     case s if s.contains("#") && !s.forall(_ == "#") => s.split("#").init.mkString
     case _ => str

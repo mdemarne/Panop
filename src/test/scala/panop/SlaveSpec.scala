@@ -19,7 +19,7 @@ class SlaveSpec extends FlatSpec {
   }
   it should "do the samething on other simpler websites" in {
     val slave = asys.actorOf(Props(new Slave))
-    slave !? Search(Url("https://www.admin.ch/opc/fr/classified-compilation/national.html", 0), Query("Etat" :: "Peuple" :: Nil, 0)) match {
+    slave !? Search(Url("https://www.crossstream.ch", 0), Query("CrossStream" :: Nil, 0)) match {
       case res: Result =>
         println(res)
         assert(res.isPositive)

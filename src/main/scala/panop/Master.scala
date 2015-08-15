@@ -3,21 +3,21 @@ package panop
 import akka.actor._
 
 /**
- * Master controller for one search run of Panop
+ * Master controller for Panop search run.
  * @author Mathieu Demarne (mathieu.demarne@gmail.com)
  */
 class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with ActorLogging {
   import com._
 
   /* Stacks */
+
   private var urls = List[Search]()
   private var foundLinks = Set[String]()
   private var results = List[Result]()
-  // TODO: in the future, this could be done using simple Akka pools.
+  // TODO: in the future, this could be done using Akka pools.
   private var slaves: List[ActorRef] = ((0 until maxSlaves + 1) map (ii => asys.actorOf(Props(new Slave)))).toList
 
-  private def explored = foundLinks.size - urls.size
-  private def progress = explored.toDouble / foundLinks.size.toDouble
+  /* Main */
 
   def receive = {
     /* Starting a specific query on an original URL (which depth should be 0) */
@@ -34,7 +34,7 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
     case DisplayResults =>
       displayProgress
       log.info("Displaying results...")
-      results.sortBy(_.search.url.link.size) foreach (r => log.info("\t" + r.search.url.link + " [" + Query.printNormalForm(r.matches) + "]")) // TODO: filter by query
+      results.sortBy(r => Query.printNormalForm(r.matches)) foreach (r => log.info("\t" + r.search.url.link + " [" + Query.printNormalForm(r.matches) + "]"))
       log.info("---------------------------------------------")
 
     /* Process a result coming from a slave */
@@ -64,6 +64,11 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
       startRound
   }
 
+  /* Helpers */ 
+
+  private def explored = foundLinks.size - urls.size
+  private def progress = explored.toDouble / foundLinks.size.toDouble
+
   private def displayProgress = {
     log.info("---------------------------------------------")
     log.info(s"Progress: $progress (explored $explored over ${foundLinks.size} links).")
@@ -74,7 +79,7 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
 
   /** Start all available slaves on all available queued urls */
   private def startRound = {
-    if (!urls.isEmpty) { // TODO: avoid searching multiple time the same URL
+    if (!urls.isEmpty) {
       val tpls = (slaves zip urls)
       slaves = slaves.drop(tpls.size)
       urls = urls.drop(tpls.size)
