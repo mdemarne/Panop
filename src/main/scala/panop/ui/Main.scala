@@ -1,4 +1,6 @@
-package panop
+package panop.ui
+
+import panop._
 
 import akka.actor._
 import scala.util.{Try, Success, Failure}
@@ -42,7 +44,7 @@ object Main {
           case x :: Nil => fatal("Wrong mode inserted")
           case _ => fatal("Cannot support more than one mode!")
         }
-        val ignExts: Regex = filterOpts("--ignored-ext=") match {
+        val ignExts: Regex = filterOpts("--ignored-exts=") match {
           case Nil => Query.defIgnExts
           case x :: Nil => x.r
           case _ => fatal("Cannot support multiple regex for ignored extensions!")
@@ -125,7 +127,7 @@ object Main {
       |    Specify the url prefix for all explored link. By default, the search will expand beyond the original domain.
       |  --mode=MODE
       |    Apply various lookup mode for found URLs (BFS, DFS, RND (random)).
-      |  --ignored-ext=REGEX
+      |  --ignored-exts=REGEX
       |    Regex for ignored extensions (Default for all images, PDF, SVG, CSS, Javascript, etc.).
       |  --boundaries-top=REGEX
       |    Top boundary in which a code will be considered.
