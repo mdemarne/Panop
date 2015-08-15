@@ -48,7 +48,7 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
       val filteredLinks = links filter (link => !foundLinks.contains(link))
       foundLinks ++= filteredLinks
       urls = urls ::++ (filteredLinks map (l => search.copy(url = Url(l, search.url.depth + 1)))).toList
-      log.info(s"${search.url.link} done, found ${filteredLinks.size} new urls, ${if (res.isPositive) "[MATCHES]" else ""}") // TODO: change that to debug
+      log.debug(s"${search.url.link} done, found ${filteredLinks.size} new urls, ${if (res.isPositive) "[MATCHES]" else ""}")
       /* Restarting on urls */
       slaves :+= sender
       startRound
