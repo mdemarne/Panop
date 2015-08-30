@@ -14,7 +14,7 @@ Panop will provide you a simple interface that allow you to select the target
 of a search and its settings, as well as domain boundaries and search
 depth. It will then return you a list of URLs matching your requirements
 and allow you to browse through it.
-
+b
 Panop is a command-line-based tool.
 
 ## How to use
