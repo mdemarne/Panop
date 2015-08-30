@@ -1,4 +1,4 @@
-# Panop
+# Panop [![Build Status](https://travis-ci.org/mdemarne/panop-core.svg)](https://travis-ci.org/mdemarne/panop-core)
 Simple Tool For Parallel Online Search
 
 ## About
