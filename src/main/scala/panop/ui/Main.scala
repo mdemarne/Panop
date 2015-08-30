@@ -60,9 +60,9 @@ object Main {
           case _ => fatal("Cannot support multiple regex for top boundaries!")
         }
         val MaxSlaves: Int = filterOpts("--max-slaves=") match {
-          case Nil => Query.defMaxSlaves
+          case Nil => Query.defSlaves
           case x :: Nil => Try(x.toInt) match {
-            case Success(max) if max > 0 => max
+            case Success(max) if max > 0 => Math.min(max, Query.defMaxSlaves)
             case Failure(_) => fatal("--max-slave must be a positive integer.")
           }
           case _ => fatal("Cannot specify more than once the maximum number of slaves!")

@@ -47,8 +47,9 @@ object Query {
   val defMode = BFSMode
   val defIgnExts = "js|css|pdf|png|jpg|gif|jpeg|svg|tiff".r
   val defTopBnds = "<body>|<BODY>".r
-  val defBotBnds = "</body>|</body>".r
+  val defBotBnds = "</body>|</BODY>".r
   val defMaxSlaves = 200
+  val defSlaves = 20
 
   def apply(pos: Seq[String], maxDepth: Int): Query = Query(pos :: Nil, Nil, maxDepth, None, defMode, defIgnExts, (defTopBnds, defBotBnds))
   def apply(w: String, maxDepth: Int): Query = Query((w :: Nil) :: Nil, Nil, maxDepth, None, defMode, defIgnExts, (defTopBnds, defBotBnds))
