@@ -37,3 +37,10 @@ panop --help
 ## Note
 The use of Panop can produce some workload on websites, depending of 
 its settings.
+
+## TODO
+
+- Allow more complicated query (with exclusions)
+- Allow more than one domain reach and launch on multiple pages
+- Move to have UI printouts only in ui
+- Do web interface using Play

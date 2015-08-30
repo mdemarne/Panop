@@ -4,3 +4,5 @@ target/
 *.swp
 *.class
 .idea
+last.log
+panop
