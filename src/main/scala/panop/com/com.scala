@@ -20,6 +20,10 @@ package object com {
     def isPositive = !matches.isEmpty
   }
   case class Failed(search: Search)
-  case object DisplayResults
-  case object DisplayProgress
+
+  case object AskResults
+  case class AswResults(results: List[Result])
+
+  case object AskProgress
+  case class AswProgress(percent: Double, nbExplored: Int, nbFound: Int, nbMatches: Int)
 }

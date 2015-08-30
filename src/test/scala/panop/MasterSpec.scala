@@ -11,16 +11,22 @@ class MasterSpec extends FlatSpec {
 
   "A master" should "start a very simple search of depth 0" in {
     val master = asys.actorOf(Props(new Master(asys)))
-    master ! Search(Url("https://news.google.com"), Query("Obama" :: Nil, 0))
+    master ! Search(Url("https://news.google.com"), Query("Google" :: Nil, 0))
     Thread.sleep(1000)
-    master ! DisplayResults
+    master !? AskResults match {
+      case AswResults(results) => assert(results.size == 1)
+      case _ => fail
+    }
     // TODO: proper testing
   }
   "A master" should "start a very simple search of depth 1" in {
     val master = asys.actorOf(Props(new Master(asys)))
-    master ! Search(Url("https://news.google.com"), Query("Obama" :: Nil, 1))
+    master ! Search(Url("https://news.google.com"), Query("Google" :: Nil, 1))
     Thread.sleep(10000)
-    master ! DisplayResults
+    master !? AskResults match {
+      case AswResults(results) => assert(results.size > 1)
+      case _ => fail
+    }
     // TODO: proper testing
   }
 }

@@ -28,15 +28,6 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
       urls +:= Search(url, query)
       startRound
 
-    case DisplayProgress => displayProgress
-
-    /* Simply display the results on demand */
-    case DisplayResults =>
-      displayProgress
-      log.info("Displaying results...")
-      results.sortBy(r => Query.printNormalForm(r.matches)) foreach (r => log.info("\t" + r.search.url.link + " [" + Query.printNormalForm(r.matches) + "]"))
-      log.info("---------------------------------------------")
-
     /* Process a result coming from a slave */
     case res @ Result(search, matches, links) =>
       /* Getting proper search mode */
@@ -62,19 +53,18 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
       urls = urls ::+ search
       slaves :+= sender
       startRound
+
+    case AskProgress => sender ! AswProgress(progress, nbExplored, foundLinks.size, results.size)
+    case AskResults => sender ! AswResults(results)
   }
 
-  /* Helpers */ 
+  /* Helpers */
 
-  private def explored = foundLinks.size - urls.size
-  private def progress = explored.toDouble / foundLinks.size.toDouble
+  private def nbExplored = foundLinks.size - urls.size
+  private def progress = nbExplored.toDouble / foundLinks.size.toDouble
 
   private def displayProgress = {
-    log.info("---------------------------------------------")
-    log.info(s"Progress: $progress (explored $explored over ${foundLinks.size} links).")
-    log.info(s"Found ${results.length} matches.")
-    log.info(s"${slaves.size} slaves idle (${maxSlaves - slaves.size} active).")
-    log.info("---------------------------------------------")
+
   }
 
   /** Start all available slaves on all available queued urls */

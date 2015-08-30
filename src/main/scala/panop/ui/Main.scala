@@ -3,7 +3,7 @@ package panop.ui
 import panop._
 
 import akka.actor._
-import scala.util.{Try, Success, Failure}
+import scala.util.{ Try, Success, Failure }
 import scala.util.matching.Regex
 
 import java.util.Scanner
@@ -17,9 +17,9 @@ object Main {
   import Enrichments._
 
   def main(args: Array[String]) = {
-    args.toList match { 
+    args.toList match {
       case opts if opts.contains("--help") => help
-      case queryStr :: url :: maxDepthStr :: opts => 
+      case queryStr :: url :: maxDepthStr :: opts =>
 
         def filterOpts(key: String) = opts.filter(_.startsWith(key)).map(_.drop(key.length))
 
@@ -62,8 +62,8 @@ object Main {
         val MaxSlaves: Int = filterOpts("--max-slaves=") match {
           case Nil => Query.defMaxSlaves
           case x :: Nil => Try(x.toInt) match {
-          case Success(max) if max > 0 => max
-          case Failure(_) => fatal("--max-slave must be a positive integer.")
+            case Success(max) if max > 0 => max
+            case Failure(_) => fatal("--max-slave must be a positive integer.")
           }
           case _ => fatal("Cannot specify more than once the maximum number of slaves!")
         }
@@ -79,13 +79,27 @@ object Main {
     val sc = new Scanner(System.in)
     def loop: Unit = {
       sc.nextLine match {
-        case "progress" => 
-          master ! DisplayProgress
+        case "progress" =>
+          master !? AskProgress match {
+            case AswProgress(progress, nbExplored, nbFound, nbMatches) =>
+              println("---------------------------------------------")
+              println(s"Progress: $progress (explored $nbExplored over $nbFound links).")
+              println(s"Found $nbMatches matches.")
+              println("---------------------------------------------")
+            case _ => fatal("Wrong result type for AskProgress.")
+          }
           loop
         case "results" =>
-          master ! DisplayResults
+          master !? AskResults match {
+            case AswResults(results) =>
+              println("---------------------------------------------")
+              println("Displaying results...")
+              results.sortBy(r => Query.printNormalForm(r.matches)) foreach (r => println("\t" + r.search.url.link + " [" + Query.printNormalForm(r.matches) + "]"))
+              println("---------------------------------------------")
+            case _ => fatal("Wrong result type for AskResults.")
+          }
           loop
-        case "help" => 
+        case "help" =>
           help
           loop
         case "exit" =>
