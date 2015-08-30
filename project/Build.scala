@@ -42,12 +42,13 @@ object PanopBuild extends Build {
   }
 
   lazy val root = Project(
-    id = "panop",
+    id = "panop-core",
     base = file("."),
     settings = Project.defaultSettings ++ Seq(
-      name := "panop",
+      name := "panop-core",
       description := "Simple Tool For Parallel Online Search",
       organization := "name.demarne.m",
+      version := "1.0-SNAPSHOT",
       scalaVersion := "2.11.6",
       libraryDependencies ++= Seq(
         "com.typesafe.akka" %% "akka-actor" % "2.3.12",
