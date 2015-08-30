@@ -66,7 +66,7 @@ object Query {
 object QueryParser extends RegexParsers {
   private def word: Parser[String] = "'[^']+'".r ^^ { case e => e.tail.init }
   private def conj: Parser[Seq[String]] = (
-    "(" ~> word ~ ("AND" ~> word).* <~ ")" ^^ {
+    "\\(?".r ~> word ~ ("AND" ~> word).* <~ "\\)?".r ^^ {
       case e ~ Nil => Seq(e)
       case e ~ e1 => Seq(e) ++ e1.toSeq
     }
