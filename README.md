@@ -10,7 +10,7 @@ are targeted.
 One way to avoid this is to do online analysis and search: this is what 
 Panop is for.
 
-Panop will provide you a simple interface that allow you to select the target
+Panop will provide you a simple interface that allows you to select the target
 of a search and its settings, as well as domain boundaries and search
 depth. It will then return you a list of URLs matching your requirements
 and allow you to browse through it.
@@ -36,4 +36,4 @@ panop --help
 
 ## Note
 The use of Panop can produce some workload on websites, depending of 
-its settings.
+its settings.b
