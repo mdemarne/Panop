@@ -11,6 +11,7 @@ import scala.util.Try
 
 /**
  * Enrichments for application-specific Akka interactions.
+ * Courtesy of CrossStream.ch
  * @author Mathieu Demarne (mathieu.demarne@gmail.com)
  */
 object Enrichments {

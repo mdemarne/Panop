@@ -19,7 +19,7 @@ object Main {
   def main(args: Array[String]) = {
     args.toList match {
       case opts if opts.contains("--help") => help
-      case queryStr :: url :: maxDepthStr :: opts =>
+      case queryStr :: url :: opts =>
 
         def filterOpts(key: String) = opts.filter(_.startsWith(key)).map(_.drop(key.length))
 
@@ -27,9 +27,13 @@ object Main {
           case Left(qr) => qr
           case Right(err) => fatal(err)
         }
-        val maxDepth = Try(maxDepthStr.toInt) match {
-          case Success(d) if d > 0 => d
-          case _ => fatal("the depth should be a positive integer.")
+        val maxDepth: Int = filterOpts("--max-depth=") match {
+          case Nil => Settings.defDepth
+          case x :: Nil => Try(x.toInt) match {
+            case Success(max) if max > 0 => Math.min(max, Settings.defMaxDepth)
+            case Failure(_) => fatal("--max-depth must be a positive integer")
+          }
+          case _ => fatal("Cannot specify more than once the maximum depth!")
         }
         val domain: Option[String] = filterOpts("--domain=") match {
           case Nil => None
@@ -129,7 +133,7 @@ object Main {
       |  panop
       |
       |SYNOPSIS
-      |  panop [QUERY] [URL] [DEPTH] [OPTIONS]
+      |  panop [QUERY] [URL] [OPTIONS]
       |
       |DESCRIPTION
       |  Simple Tool For Parallel Online Search - refer to https://github.com/mdemarne/Panop.
@@ -137,10 +141,12 @@ object Main {
       |OPTIONS
       |  --help 
       |    Display this help.
+      |  --max-depth=NUMBER
+      |    Maximum depth recursion for the research tree (by default, 5)
       |  --domain=URLPREFIX
       |    Specify the url prefix for all explored link. By default, the search will expand beyond the original domain.
       |  --mode=MODE
-      |    Apply various lookup mode for found URLs (BFS, DFS, RND (random)).
+      |    Apply various lookup mode for found URLs (BFS, DFS, RND (random)) (by default, BFS).
       |  --ignored-exts=REGEX
       |    Regex for ignored extensions (Default for all images, PDF, SVG, CSS, Javascript, etc.).
       |  --boundaries-top=REGEX
