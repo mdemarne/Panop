@@ -13,7 +13,7 @@ class Slave extends Actor with ActorLogging {
   import com._
 
   def receive = {
-    case search @ Search(url, query) =>
+    case search @ Search(url, query, _) =>
       Try(Http(url.link).asString) match {
 
         case Success(res) =>

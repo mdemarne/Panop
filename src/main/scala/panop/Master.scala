@@ -21,7 +21,7 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
 
   def receive = {
     /* Starting a specific query on an original URL (which depth should be 0) */
-    case Search(url, query) =>
+    case Search(url, query, _) =>
       val head = slaves.head
       slaves = slaves.tail
       foundLinks += url.link
@@ -50,7 +50,7 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
       val mw = new ModeWrapper(search.query.mode)
       import mw._
       // TODO: there should be some notion of repeated failure, and such URLs could be ignored at some point.
-      urls = urls ::+ search
+      if (search.coTentatives < Settings.defMaxCoTentatives) urls = urls ::+ search.copy(coTentatives = search.coTentatives + 1)
       slaves :+= sender
       startRound
 

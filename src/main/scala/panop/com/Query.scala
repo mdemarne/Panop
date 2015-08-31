@@ -43,22 +43,14 @@ case class Query(
 
 object Query {
 
-  // TODO: in the future, this could be moved to Akka configuration for instance.
-  val defMode = BFSMode
-  val defIgnExts = "js|css|pdf|png|jpg|gif|jpeg|svg|tiff".r
-  val defTopBnds = "<body>|<BODY>".r
-  val defBotBnds = "</body>|</BODY>".r
-  val defMaxSlaves = 200
-  val defSlaves = 20
-
-  def apply(pos: Seq[String], maxDepth: Int): Query = Query(pos :: Nil, Nil, maxDepth, None, defMode, defIgnExts, (defTopBnds, defBotBnds))
-  def apply(w: String, maxDepth: Int): Query = Query((w :: Nil) :: Nil, Nil, maxDepth, None, defMode, defIgnExts, (defTopBnds, defBotBnds))
+  def apply(pos: Seq[String], maxDepth: Int): Query = Query(pos :: Nil, Nil, maxDepth, None, Settings.defMode, Settings.defIgnExts, (Settings.defTopBnds, Settings.defBotBnds))
+  def apply(w: String, maxDepth: Int): Query = Query((w :: Nil) :: Nil, Nil, maxDepth, None, Settings.defMode, Settings.defIgnExts, (Settings.defTopBnds, Settings.defBotBnds))
   
-  def apply(pos: Seq[String], maxDepth: Int, domain: String): Query = Query(pos :: Nil, Nil, maxDepth, Some(domain), defMode, defIgnExts, (defTopBnds, defBotBnds))
-  def apply(w: String, maxDepth: Int, domain: String): Query = Query((w :: Nil) :: Nil, Nil, maxDepth, Some(domain), defMode, defIgnExts, (defTopBnds, defBotBnds))
+  def apply(pos: Seq[String], maxDepth: Int, domain: String): Query = Query(pos :: Nil, Nil, maxDepth, Some(domain), Settings.defMode, Settings.defIgnExts, (Settings.defTopBnds, Settings.defBotBnds))
+  def apply(w: String, maxDepth: Int, domain: String): Query = Query((w :: Nil) :: Nil, Nil, maxDepth, Some(domain), Settings.defMode, Settings.defIgnExts, (Settings.defTopBnds, Settings.defBotBnds))
 
-  def apply(poss: Seq[Seq[String]], negs: Seq[Seq[String]], maxDepth: Int): Query = Query(poss, negs, maxDepth, None, defMode, defIgnExts, (defTopBnds, defBotBnds))
-  def apply(poss: Seq[Seq[String]], negs: Seq[Seq[String]], maxDepth: Int, domain: String): Query = Query(poss, negs, maxDepth, Some(domain), defMode, defIgnExts, (defTopBnds, defBotBnds))
+  def apply(poss: Seq[Seq[String]], negs: Seq[Seq[String]], maxDepth: Int): Query = Query(poss, negs, maxDepth, None, Settings.defMode, Settings.defIgnExts, (Settings.defTopBnds, Settings.defBotBnds))
+  def apply(poss: Seq[Seq[String]], negs: Seq[Seq[String]], maxDepth: Int, domain: String): Query = Query(poss, negs, maxDepth, Some(domain), Settings.defMode, Settings.defIgnExts, (Settings.defTopBnds, Settings.defBotBnds))
 
   def printNormalForm(nls: Seq[Seq[String]]) = nls.map(_.map(_.toString).mkString("(", " AND ", ")")).mkString(" OR ")
   def printLogicalQuery(poss: Seq[Seq[String]], negs: Seq[Seq[String]]) = Query.printNormalForm(poss) + " - " + Query.printNormalForm(negs)

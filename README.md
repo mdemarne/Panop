@@ -36,4 +36,4 @@ panop --help
 
 ## Note
 The use of Panop can produce some workload on websites, depending of 
-its settings.b
+its settings.

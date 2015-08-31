@@ -37,7 +37,7 @@ object Main {
           case _ => fatal("Cannot specify more than one domain!")
         }
         val mode: Mode = filterOpts("--mode=") match {
-          case Nil => Query.defMode
+          case Nil => Settings.defMode
           case x :: Nil if x == "BFS" => BFSMode
           case x :: Nil if x == "DFS" => DFSMode
           case x :: Nil if x == "RND" => RNDMode
@@ -45,24 +45,24 @@ object Main {
           case _ => fatal("Cannot support more than one mode!")
         }
         val ignExts: Regex = filterOpts("--ignored-exts=") match {
-          case Nil => Query.defIgnExts
+          case Nil => Settings.defIgnExts
           case x :: Nil => x.r
           case _ => fatal("Cannot support multiple regex for ignored extensions!")
         }
         val topBnds: Regex = filterOpts("--boundaries-top=") match {
-          case Nil => Query.defTopBnds
+          case Nil => Settings.defTopBnds
           case x :: Nil => x.r
           case _ => fatal("Cannot support multiple regex for top boundaries!")
         }
         val botBnds: Regex = filterOpts("--boundaries-bottom=") match {
-          case Nil => Query.defBotBnds
+          case Nil => Settings.defBotBnds
           case x :: Nil => x.r
           case _ => fatal("Cannot support multiple regex for top boundaries!")
         }
         val MaxSlaves: Int = filterOpts("--max-slaves=") match {
-          case Nil => Query.defSlaves
+          case Nil => Settings.defSlaves
           case x :: Nil => Try(x.toInt) match {
-            case Success(max) if max > 0 => Math.min(max, Query.defMaxSlaves)
+            case Success(max) if max > 0 => Math.min(max, Settings.defMaxSlaves)
             case Failure(_) => fatal("--max-slave must be a positive integer.")
           }
           case _ => fatal("Cannot specify more than once the maximum number of slaves!")
