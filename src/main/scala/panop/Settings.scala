@@ -16,7 +16,7 @@ object Settings {
   val defIgnExts = "js|css|pdf|png|jpg|gif|jpeg|svg|tiff".r
   val defTopBnds = "<body>|<BODY>".r
   val defBotBnds = "</body>|</BODY>".r
-  val defMaxSlaves = 200
-  val defSlaves = 20
+  val defMaxSlaves = 30
+  val defSlaves = 10
   val defMaxCoTentatives = 10
 }
