@@ -15,7 +15,7 @@ import scala.util.Try
  * @author Mathieu Demarne (mathieu.demarne@gmail.com)
  */
 object Enrichments {
-  val defaultTimeoutDuration = 60.seconds
+  val defaultTimeoutDuration = Settings.timeout
   implicit val defaultTimeout = Timeout(defaultTimeoutDuration)
 
   implicit class RichActorRef(actorRef: ActorRef) {

@@ -17,7 +17,6 @@ class MasterSpec extends FlatSpec {
       case AswResults(results) => assert(results.size == 1)
       case _ => fail
     }
-    // TODO: proper testing
   }
   it should "start a very simple search of depth 1" in {
     val master = asys.actorOf(Props(new Master(asys)))
@@ -27,6 +26,5 @@ class MasterSpec extends FlatSpec {
       case AswResults(results) => assert(results.size > 1)
       case _ => fail
     }
-    // TODO: proper testing
   }
 }

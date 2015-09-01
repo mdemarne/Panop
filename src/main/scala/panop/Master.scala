@@ -2,6 +2,11 @@ package panop
 
 import akka.actor._
 
+import scala.collection.immutable.HashSet
+
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
 /**
  * Master controller for Panop search run.
  * @author Mathieu Demarne (mathieu.demarne@gmail.com)
@@ -11,12 +16,12 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
 
   /* Stacks */
 
-  private var urls = List[Search]()
-  private var foundLinks = Set[String]()
-  private var results = List[Result]()
+  @volatile private var urls = List[Search]()
+  @volatile private var foundLinks = HashSet[String]()
+  @volatile private var results = List[Result]()
   // TODO: in the future, this could be done using Akka pools.
-  private var slaves: List[ActorRef] = ((0 until maxSlaves + 1) map (ii => asys.actorOf(Props(new Slave)))).toList
-  private var nbMissed = 0
+  @volatile private var slaves: List[ActorRef] = ((0 until maxSlaves + 1) map (ii => asys.actorOf(Props(new Slave)))).toList
+  @volatile private var nbMissed = 0
 
   /* Main */
 
@@ -30,31 +35,14 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
       startRound
 
     /* Process a result coming from a slave */
-    case res @ Result(search, matches, links) =>
-      /* Getting proper search mode */
-      val mw = new ModeWrapper(search.query.mode)
-      import mw._
-      /* Saving results */
-      if (res.isPositive) results :+= res
-      /* Saving links, filtered based on duplicates */
-      val filteredLinks = links filter (link => !foundLinks.contains(link))
-      foundLinks ++= filteredLinks
-      urls = urls ::++ (filteredLinks map (l => search.copy(url = Url(l, search.url.depth + 1)))).toList
-      log.debug(s"${search.url.link} done, found ${filteredLinks.size} new urls, ${if (res.isPositive) "[MATCHES]" else ""}")
-      /* Restarting on urls */
-      slaves :+= sender
-      startRound
+    case res: Result =>
+      slaves :+= sender /* Sender is now idle */
+      Future { this.reduce(res) }
 
     /* If a slave has failed to fetch one page, this one will be requeued */
     case Failed(search) =>
-      /* Getting proper search mode */
-      val mw = new ModeWrapper(search.query.mode)
-      import mw._
-      // TODO: there should be some notion of repeated failure, and such URLs could be ignored at some point.
-      if (search.coTentatives < Settings.defMaxCoTentatives) urls = urls ::+ search.copy(coTentatives = search.coTentatives + 1)
-      else nbMissed += 1
-      slaves :+= sender
-      startRound
+      slaves :+= sender /* Sender is now idle */
+      Future { this.bounce(search) }
 
     case AskProgress => sender ! AswProgress(progress, nbExplored, foundLinks.size, results.size, nbMissed)
     case AskResults => sender ! AswResults(results)
@@ -62,21 +50,38 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
 
   /* Helpers */
 
-  private def nbExplored = foundLinks.size - urls.size
-  private def progress = nbExplored.toDouble / foundLinks.size.toDouble
-
-  private def displayProgress = {
-
+  @volatile private def bounce(search: Search) = urls.synchronized {
+    /* Getting proper search mode */
+    val mw = new ModeWrapper(search.query.mode)
+    import mw._
+    // TODO: there should be some notion of repeated failure, and such URLs could be ignored at some point.
+    if (search.coTentatives < Settings.defMaxCoTentatives) urls = urls ::+ search.copy(coTentatives = search.coTentatives + 1)
+    else nbMissed += 1
+    this.startRound
   }
-
+  @volatile private def reduce(res: Result) = urls.synchronized {
+    /* Getting proper search mode */
+    val mw = new ModeWrapper(res.search.query.mode)
+    import mw._
+    /* Saving results */
+    if (res.isPositive) results :+= res
+    /* Saving links, filtered based on duplicates */
+    urls = urls ::++ ((res.links -- foundLinks) map (l => res.search.copy(url = Url(l, res.search.url.depth + 1)))).toList
+    foundLinks ++= res.links
+    log.debug(s"${res.search.url.link} done, found ${res.links.size} urls, ${if (res.isPositive) "[MATCHES]" else ""}")
+    /* Restarting on urls */
+    this.startRound
+  }
   /** Start all available slaves on all available queued urls */
-  private def startRound = {
+  @volatile private def startRound = {
     if (!urls.isEmpty) {
       val tpls = (slaves zip urls)
       slaves = slaves.drop(tpls.size)
       urls = urls.drop(tpls.size)
       tpls foreach (tpl => tpl._1 ! tpl._2)
     }
-
   }
+
+  private def nbExplored = foundLinks.size - urls.size
+  private def progress = nbExplored.toDouble / foundLinks.size.toDouble
 }
