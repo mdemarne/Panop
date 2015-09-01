@@ -37,3 +37,7 @@ panop --help
 ## Note
 The use of Panop can produce some workload on websites, depending of 
 its settings.
+
+## TODO
+- Make Master synchronization async. It's too slow to wait for all checks to come in. 
+Ideally, this should be done using another system (e.g. Spark), or at least have reducers.
