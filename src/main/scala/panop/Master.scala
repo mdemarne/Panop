@@ -50,7 +50,7 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
 
   /* Helpers */
 
-  @volatile private def bounce(search: Search) = urls.synchronized {
+  private def bounce(search: Search) = urls.synchronized {
     /* Getting proper search mode */
     val mw = new ModeWrapper(search.query.mode)
     import mw._
@@ -59,21 +59,22 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
     else nbMissed += 1
     this.startRound
   }
-  @volatile private def reduce(res: Result) = urls.synchronized {
+  private def reduce(res: Result) = urls.synchronized {
     /* Getting proper search mode */
     val mw = new ModeWrapper(res.search.query.mode)
     import mw._
     /* Saving results */
     if (res.isPositive) results :+= res
     /* Saving links, filtered based on duplicates */
-    urls = urls ::++ ((res.links -- foundLinks) map (l => res.search.copy(url = Url(l, res.search.url.depth + 1)))).toList
-    foundLinks ++= res.links
+    val newLinks = res.links.filter(l => !foundLinks.contains(l))
+    foundLinks ++= newLinks
+    urls = urls ::++ (newLinks map (l => res.search.copy(url = Url(l, res.search.url.depth + 1)))).toList
     log.debug(s"${res.search.url.link} done, found ${res.links.size} urls, ${if (res.isPositive) "[MATCHES]" else ""}")
     /* Restarting on urls */
     this.startRound
   }
   /** Start all available slaves on all available queued urls */
-  @volatile private def startRound = {
+  private def startRound = {
     if (!urls.isEmpty) {
       val tpls = (slaves zip urls)
       slaves = slaves.drop(tpls.size)
