@@ -67,8 +67,8 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
     if (res.isPositive) results :+= res
     /* Saving links, filtered based on duplicates */
     val newLinks = res.links.filter(l => !foundLinks.contains(l))
-    foundLinks ++= newLinks
     urls = urls ::++ (newLinks map (l => res.search.copy(url = Url(l, res.search.url.depth + 1)))).toList
+    foundLinks ++= newLinks
     log.debug(s"${res.search.url.link} done, found ${res.links.size} urls, ${if (res.isPositive) "[MATCHES]" else ""}")
     /* Restarting on urls */
     this.startRound
