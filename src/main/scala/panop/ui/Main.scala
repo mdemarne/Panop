@@ -85,10 +85,10 @@ object Main {
       sc.nextLine match {
         case "progress" =>
           master !? AskProgress match {
-            case AswProgress(progress, nbExplored, nbFound, nbMatches) =>
+            case AswProgress(progress, nbExplored, nbFound, nbMatches, nbMissed) =>
               println("---------------------------------------------")
               println(s"Progress: $progress (explored $nbExplored over $nbFound links).")
-              println(s"Found $nbMatches matches.")
+              println(s"Found $nbMatches matches. $nbMissed urls could not be explored.")
               println("---------------------------------------------")
             case _ => fatal("Wrong result type for AskProgress.")
           }

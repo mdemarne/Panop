@@ -25,5 +25,5 @@ package object com {
   case class AswResults(results: List[Result])
 
   case object AskProgress
-  case class AswProgress(percent: Double, nbExplored: Int, nbFound: Int, nbMatches: Int)
+  case class AswProgress(percent: Double, nbExplored: Int, nbFound: Int, nbMatches: Int, nbMissed: Int)
 }

@@ -16,6 +16,7 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
   private var results = List[Result]()
   // TODO: in the future, this could be done using Akka pools.
   private var slaves: List[ActorRef] = ((0 until maxSlaves + 1) map (ii => asys.actorOf(Props(new Slave)))).toList
+  private var nbMissed = 0
 
   /* Main */
 
@@ -51,10 +52,11 @@ class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with Act
       import mw._
       // TODO: there should be some notion of repeated failure, and such URLs could be ignored at some point.
       if (search.coTentatives < Settings.defMaxCoTentatives) urls = urls ::+ search.copy(coTentatives = search.coTentatives + 1)
+      else nbMissed += 1
       slaves :+= sender
       startRound
 
-    case AskProgress => sender ! AswProgress(progress, nbExplored, foundLinks.size, results.size)
+    case AskProgress => sender ! AswProgress(progress, nbExplored, foundLinks.size, results.size, nbMissed)
     case AskResults => sender ! AswResults(results)
   }
 
