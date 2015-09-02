@@ -46,8 +46,8 @@ class Slave extends Actor with ActorLogging {
           sender ! Result(search, matches, newLinks)
 
         case Failure(err) =>
-          log.error(s"Could not get data for $url")
-          log.error(err.getMessage)
+          log.debug(s"Could not get data for $url")
+          log.debug(err.getMessage)
           sender ! Failed(search)
       }
   }

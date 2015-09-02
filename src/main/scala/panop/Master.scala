@@ -11,78 +11,63 @@ import scala.concurrent.ExecutionContext.Implicits.global
  * Master controller for Panop search run.
  * @author Mathieu Demarne (mathieu.demarne@gmail.com)
  */
-class Master(asys: ActorSystem, var maxSlaves: Int = 200) extends Actor with ActorLogging {
+class Master(asys: ActorSystem, var maxSlaves: Int = Settings.defMaxSlaves) extends Actor with ActorLogging {
   import com._
 
   /* Stacks */
 
-  @volatile private var urls = List[Search]()
-  @volatile private var foundLinks = HashSet[String]()
-  @volatile private var results = List[Result]()
-  // TODO: in the future, this could be done using Akka pools.
-  @volatile private var slaves: List[ActorRef] = ((0 until maxSlaves + 1) map (ii => asys.actorOf(Props(new Slave)))).toList
-  @volatile private var nbMissed = 0
+  private var targets = List[Search]()
+  private var foundLinks = HashSet[String]()
+  private var results = List[Result]()
+  private var slaves = ((0 to maxSlaves) map (_ => asys.actorOf(Props(new Slave)))).toSet
+  private var nbMissed = 0
+
+  private var newFoundLinks = HashSet[String]()
+  private var newTargets = List[Search]()
 
   /* Main */
 
   def receive = {
-    /* Starting a specific query on an original URL (which depth should be 0) */
-    case Search(url, query, _) =>
-      val head = slaves.head
-      slaves = slaves.tail
-      foundLinks += url.link
-      urls +:= Search(url, query)
-      startRound
+    case srch @ Search(url, query, _) =>
+      this.foundLinks += url.link
+      val slave = slaves.head
+      this.slaves -= slave
+      slave ! srch
 
-    /* Process a result coming from a slave */
-    case res: Result =>
-      slaves :+= sender /* Sender is now idle */
-      Future { this.reduce(res) }
+    case res @ Result(srch @ Search(url, query, coTentatives), matches, links) =>
+      val mw = new ModeWrapper(query.mode); import mw._
+      this.slaves += sender
+      this.newTargets = this.newTargets ::++ ((links filter (l => !this.newFoundLinks.contains(l))).toList map (l => Search(Url(l, url.depth + 1), query)))
+      this.newFoundLinks ++= links
+      if (res.isPositive) results :+= res
+      if (this.targets.size == 0) {
+        this.targets = this.newTargets.filter(t => !this.foundLinks.contains(t.url.link))
+        this.foundLinks ++= this.newFoundLinks
+        this.newFoundLinks = HashSet[String]()
+        this.newTargets = List[Search]()
+      }
+      this.startRound
 
-    /* If a slave has failed to fetch one page, this one will be requeued */
     case Failed(search) =>
-      slaves :+= sender /* Sender is now idle */
-      Future { this.bounce(search) }
+      val mw = new ModeWrapper(search.query.mode); import mw._
+      this.slaves += sender
+      if (search.coTentatives < Settings.defMaxCoTentatives) this.targets = this.targets ::+ search.copy(coTentatives = search.coTentatives + 1)
+      else nbMissed += 1
+      this.startRound
 
-    case AskProgress => sender ! AswProgress(progress, nbExplored, foundLinks.size, results.size, nbMissed)
-    case AskResults => sender ! AswResults(results)
+    case AskProgress => sender ! AswProgress(this.progress, this.nbExplored, this.foundLinks.size + this.newFoundLinks.size, this.results.size, this.nbMissed)
+    case AskResults =>  sender ! AswResults(this.results)
   }
 
-  /* Helpers */
+  /* Helper */
 
-  private def bounce(search: Search) = urls.synchronized {
-    /* Getting proper search mode */
-    val mw = new ModeWrapper(search.query.mode)
-    import mw._
-    // TODO: there should be some notion of repeated failure, and such URLs could be ignored at some point.
-    if (search.coTentatives < Settings.defMaxCoTentatives) urls = urls ::+ search.copy(coTentatives = search.coTentatives + 1)
-    else nbMissed += 1
-    this.startRound
-  }
-  private def reduce(res: Result) = urls.synchronized {
-    /* Getting proper search mode */
-    val mw = new ModeWrapper(res.search.query.mode)
-    import mw._
-    /* Saving results */
-    if (res.isPositive) results :+= res
-    /* Saving links, filtered based on duplicates */
-    val newLinks = res.links.filter(l => !foundLinks.contains(l))
-    urls = urls ::++ (newLinks map (l => res.search.copy(url = Url(l, res.search.url.depth + 1)))).toList
-    foundLinks ++= newLinks
-    log.debug(s"${res.search.url.link} done, found ${res.links.size} urls, ${if (res.isPositive) "[MATCHES]" else ""}")
-    /* Restarting on urls */
-    this.startRound
-  }
-  /** Start all available slaves on all available queued urls */
-  private def startRound = {
-    if (!urls.isEmpty) {
-      val tpls = (slaves zip urls)
-      slaves = slaves.drop(tpls.size)
-      urls = urls.drop(tpls.size)
+    private def startRound = if (!this.targets.isEmpty) {
+      val tpls = (this.slaves zip this.targets)
+      this.slaves = this.slaves.drop(tpls.size)
+      this.targets = targets.drop(tpls.size)
       tpls foreach (tpl => tpl._1 ! tpl._2)
     }
-  }
 
-  private def nbExplored = foundLinks.size - urls.size
-  private def progress = nbExplored.toDouble / foundLinks.size.toDouble
+    private def nbExplored = this.foundLinks.size + this.newFoundLinks.size - this.targets.size - this.newTargets.size
+    private def progress = this.nbExplored.toDouble / (this.foundLinks.size.toDouble + this.newFoundLinks.size.toDouble)
 }
