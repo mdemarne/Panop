@@ -19,7 +19,8 @@ object Enrichments {
   implicit val defaultTimeout = Timeout(defaultTimeoutDuration)
 
   implicit class RichActorRef(actorRef: ActorRef) {
-    /** Send a message and retrieve the answer in a blocking manner, using default timeout. */
+    /** Send a message and retrieve the answer in a blocking manner,
+     * using default timeout. */
     def !?(mess: Any) = {
       val resultProm = actorRef ? mess
       Await.result(resultProm, defaultTimeoutDuration)

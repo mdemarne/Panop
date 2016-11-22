@@ -5,8 +5,10 @@ import panop._
 import akka.actor._
 import scala.util.{ Try, Success, Failure }
 import scala.util.matching.Regex
+import scala.annotation.tailrec
 
 import java.util.Scanner
+
 
 /**
  * Launch and manage searches (main loop)
@@ -17,19 +19,25 @@ object Main {
   import Enrichments._
 
   def main(args: Array[String]) = {
-    /* Parse arguments */
+    /* Get all arguments */
     args.toList match {
       /* If it is help */
       case opts if opts.contains("--help") => help
-      /* Otherwise */
+
+      /* Otherwise: assume query string, then url, then options */
       case queryStr :: url :: opts =>
 
-        def filterOpts(key: String) = opts.filter(_.startsWith(key)).map(_.drop(key.length))
+        /** Gets argument for a specific key. Assume only one entry per key. */
+        def filterOpts(key: String) = opts.filter(_.startsWith(key))
+          .map(_.drop(key.length))
 
-        val query: (Seq[Seq[String]], Seq[Seq[String]]) = QueryParser(queryStr) match {
-          case Left(qr) => qr
-          case Right(err) => fatal(err)
-        }
+        /* Parses query. */
+        val query: (Seq[Seq[String]], Seq[Seq[String]]) =
+          QueryParser(queryStr) match {
+            case Left(qr) => qr
+            case Right(err) => fatal(err)
+          }
+        /* Get max depth argument. */
         val maxDepth: Int = filterOpts("--max-depth=") match {
           case Nil => Settings.defDepth
           case x :: Nil => Try(x.toInt) match {
@@ -38,11 +46,15 @@ object Main {
           }
           case _ => fatal("Cannot specify more than once the maximum depth!")
         }
+
+        /* Get domain */
         val domain: Option[String] = filterOpts("--domain=") match {
           case Nil => None
           case x :: Nil => Some(x)
           case _ => fatal("Cannot specify more than one domain!")
         }
+
+        /* Select mode */
         val mode: Mode = filterOpts("--mode=") match {
           case Nil => Settings.defMode
           case x :: Nil if x == "BFS" => BFSMode
@@ -51,11 +63,15 @@ object Main {
           case x :: Nil => fatal("Wrong mode inserted")
           case _ => fatal("Cannot support more than one mode!")
         }
+
+        /* Get regex for ignored files */
         val ignExts: Regex = filterOpts("--ignored-exts=") match {
           case Nil => Settings.defIgnExts
           case x :: Nil => x.r
-          case _ => fatal("Cannot support multiple regex for ignored extensions!")
+          case _ => fatal("Cannot support multiple regex for ignored ext.!")
         }
+
+        /* Get Boundaries (top, bottom) */
         val topBnds: Regex = filterOpts("--boundaries-top=") match {
           case Nil => Settings.defTopBnds
           case x :: Nil => x.r
@@ -66,26 +82,35 @@ object Main {
           case x :: Nil => x.r
           case _ => fatal("Cannot support multiple regex for top boundaries!")
         }
+
+        /* Get the minimum number of slaves requires */
         val MaxSlaves: Int = filterOpts("--max-slaves=") match {
           case Nil => Settings.defSlaves
           case x :: Nil => Try(x.toInt) match {
             case Success(max) if max > 0 => Math.min(max, Settings.defMaxSlaves)
             case Failure(_) => fatal("--max-slave must be a positive integer.")
           }
-          case _ => fatal("Cannot specify more than once the maximum number of slaves!")
+          case _ => fatal("Cannot specify more than once the slave number!")
         }
+
+        /* Generate the actor system, create the master node */
         val asys = ActorSystem.create("Panop")
         val master = asys.actorOf(Props(new Master(asys, MaxSlaves)))
-        val search = Search(Url(url), Query(query._1, query._2, maxDepth, domain, mode, ignExts, (topBnds, botBnds)))
+        val search = Search(Url(url), Query(query._1, query._2, maxDepth,
+          domain, mode, ignExts, (topBnds, botBnds)))
+        /* Start executing! */
         exec(asys, master, search)
-      case _ => fatal("Error while loading parameters. Enter 'panop --help' for usage.")
+      case _ => fatal("Error loading parameters. 'panop --help' for usage.")
     }
   }
 
+  /** control loop: once an actor system specified and a master created. Loop
+   *  on user arguments. */
   private def exec(asys: ActorSystem, master: ActorRef, search: Search) = {
     val sc = new Scanner(System.in)
-    def loop: Unit = {
+    @tailrec def loop: Unit = {
       sc.nextLine match {
+        /* Display current progress status */
         case "progress" =>
           master !? AskProgress match {
             case AswProgress(progress, nbExplored, nbFound, nbMatches, nbMissed) =>
@@ -95,29 +120,43 @@ object Main {
               println("---------------------------------------------")
             case _ => fatal("Wrong result type for AskProgress.")
           }
-          loop
+          loop /* Loop again! */
+
+        /* Display current result status */
         case "results" =>
           master !? AskResults match {
             case AswResults(results) =>
               println("---------------------------------------------")
               println("Displaying results...")
-              results.sortBy(r => Query.printNormalForm(r.matches)) foreach (r => println("\t" + r.search.url.link + " [" + Query.printNormalForm(r.matches) + "]"))
+              results.sortBy(r =>
+                Query.printNormalForm(r.matches)
+              ) foreach (r =>
+                println("\t" + r.search.url.link + " [" + Query.printNormalForm(r.matches) + "]")
+              )
               println("---------------------------------------------")
             case _ => fatal("Wrong result type for AskResults.")
           }
           loop
+
+        /* Display help */
         case "help" =>
           help
           loop
+
+        /* Shutdown the actor system and stop any search */
         case "exit" =>
           println("Stopping all searches..")
           asys.shutdown
+
+        /* Anything else is wrong. */
         case _ =>
           println("Wrong command")
           loop
       }
     }
-    master ! search
+
+    /* Startup execution: starts the loop. */
+    master ! search // Start the search
     println(s"$search")
     println("Enter 'progress', 'results', 'help' or 'exit' at any time.")
     loop
