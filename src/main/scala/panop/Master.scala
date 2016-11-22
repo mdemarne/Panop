@@ -8,7 +8,8 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
- * Master controller for Panop search run.
+ * Master controller for Panop search run. Gathers all the results and schedule
+ * next tests batches.
  * @author Mathieu Demarne (mathieu.demarne@gmail.com)
  */
 class Master(asys: ActorSystem, var maxSlaves: Int = Settings.defMaxSlaves) extends Actor with ActorLogging {
@@ -16,6 +17,7 @@ class Master(asys: ActorSystem, var maxSlaves: Int = Settings.defMaxSlaves) exte
 
   /* Stacks */
 
+  /** List of target search links */
   private var targets = List[Search]()
   private var foundLinks = HashSet[String]()
   private var results = List[Result]()

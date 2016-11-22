@@ -8,10 +8,12 @@ import scala.concurrent.duration._
 /**
  * Setting object containig default parameters.
  * @author Mathieu Demarne (mathieu.demarne@gmail.com)
+ * @todo   Move this to some more regular setting framework maintained outside
+ *         of Scala code.
  */
 object Settings {
   import com._
-  // TODO: in the future, this could be moved to Akka configuration for instance.
+
   val defMaxDepth = 20
   val defDepth = 5
   val defMode = BFSMode

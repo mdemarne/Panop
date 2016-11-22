@@ -17,8 +17,11 @@ object Main {
   import Enrichments._
 
   def main(args: Array[String]) = {
+    /* Parse arguments */
     args.toList match {
+      /* If it is help */
       case opts if opts.contains("--help") => help
+      /* Otherwise */
       case queryStr :: url :: opts =>
 
         def filterOpts(key: String) = opts.filter(_.startsWith(key)).map(_.drop(key.length))
@@ -139,7 +142,7 @@ object Main {
       |  Simple Tool For Parallel Online Search - refer to https://github.com/mdemarne/Panop.
       |
       |OPTIONS
-      |  --help 
+      |  --help
       |    Display this help.
       |  --max-depth=NUMBER
       |    Maximum depth recursion for the research tree (by default, 5)
