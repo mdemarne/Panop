@@ -3,6 +3,7 @@ import scalaj.http._
 import panop._
 import akka.actor._
 
+/** Check the Master Actor. */
 class MasterSpec extends FlatSpec {
   import panop.com._
   import Enrichments._

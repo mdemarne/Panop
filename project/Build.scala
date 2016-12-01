@@ -3,6 +3,7 @@ import Process._
 import Keys._
 
 // Thanks to leon (LARA/EPFL) for the script generation!
+// TODO: update this build script to latest version of SBT
 object PanopBuild extends Build {
   private val scriptName = "panop"
   def scriptFile = file(".") / scriptName
@@ -44,7 +45,7 @@ object PanopBuild extends Build {
   lazy val root = Project(
     id = "panop-core",
     base = file("."),
-    settings = Project.defaultSettings ++ Seq(
+    settings = Defaults.coreDefaultSettings ++ Seq(
       name := "panop-core",
       description := "Simple Tool For Parallel Online Search",
       organization := "name.demarne.m",

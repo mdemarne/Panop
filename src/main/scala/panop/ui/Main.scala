@@ -113,10 +113,13 @@ object Main {
         /* Display current progress status */
         case "progress" =>
           master !? AskProgress match {
-            case AswProgress(progress, nbExplored, nbFound, nbMatches, nbMissed) =>
+            case AswProgress(progress, nbExplored, nbFound, nbMatches,
+              nbMissed) =>
               println("---------------------------------------------")
-              println(s"Progress: $progress (explored $nbExplored over $nbFound links).")
-              println(s"Found $nbMatches matches. $nbMissed urls could not be explored.")
+              println(s"Progress: $progress (explored $nbExplored over " +
+                "$nbFound links).")
+              println(s"Found $nbMatches matches. $nbMissed urls could not " +
+                "be explored.")
               println("---------------------------------------------")
             case _ => fatal("Wrong result type for AskProgress.")
           }
@@ -131,7 +134,8 @@ object Main {
               results.sortBy(r =>
                 Query.printNormalForm(r.matches)
               ) foreach (r =>
-                println("\t" + r.search.url.link + " [" + Query.printNormalForm(r.matches) + "]")
+                println("\t" + r.search.url.link +
+                  " [" + Query.printNormalForm(r.matches) + "]")
               )
               println("---------------------------------------------")
             case _ => fatal("Wrong result type for AskResults.")
@@ -178,7 +182,8 @@ object Main {
       |  panop [QUERY] [URL] [OPTIONS]
       |
       |DESCRIPTION
-      |  Simple Tool For Parallel Online Search - refer to https://github.com/mdemarne/Panop.
+      |  Simple Tool For Parallel Online Search - refer to
+      |  https://github.com/mdemarne/panop-core
       |
       |OPTIONS
       |  --help
@@ -186,11 +191,14 @@ object Main {
       |  --max-depth=NUMBER
       |    Maximum depth recursion for the research tree (by default, 5)
       |  --domain=URLPREFIX
-      |    Specify the url prefix for all explored link. By default, the search will expand beyond the original domain.
+      |    Specify the url prefix for all explored link. By default, the search
+      |    will expand beyond the original domain.
       |  --mode=MODE
-      |    Apply various lookup mode for found URLs (BFS, DFS, RND (random)) (by default, BFS).
+      |    Apply various lookup mode for found URLs (BFS, DFS, RND (random))
+      |    (by default, BFS).
       |  --ignored-exts=REGEX
-      |    Regex for ignored extensions (Default for all images, PDF, SVG, CSS, Javascript, etc.).
+      |    Regex for ignored extensions (Default for all images, PDF, SVG,
+      | CSS, Javascript, etc.).
       |  --boundaries-top=REGEX
       |    Top boundary in which a code will be considered.
       |  --boundaries-bottom=REGEX

@@ -2,6 +2,7 @@ import org.scalatest._
 import scalaj.http._
 import panop.com._
 
+/** Check the small query DSL */
 class QuerySpec extends FlatSpec {
   "A Query" should "match 01" in {
     val content = "aa"
@@ -48,26 +49,33 @@ class QuerySpec extends FlatSpec {
 
   "A QueryParser" should "do simple parsing" in {
     val queryStr = "'TEST 01'"
-    assert(QueryParser(queryStr) == Left((Seq(Seq("TEST 01")), Seq())))
+    assert(QueryParser(queryStr) == Left((Seq(Seq("TEST 01")),
+      Seq())))
   }
   it should "do simple conjunctions" in {
     val queryStr = "'TEST 01' AND 'TEST 02'"
-    assert(QueryParser(queryStr) == Left((Seq(Seq("TEST 01", "TEST 02")), Seq())))
+    assert(QueryParser(queryStr) == Left((Seq(Seq("TEST 01", "TEST 02")),
+      Seq())))
   }
   it should "do simple disjunctions" in {
     val queryStr = "('TEST 01') OR ('TEST 02')"
-    assert(QueryParser(queryStr) == Left((Seq(Seq("TEST 01"), Seq("TEST 02")), Seq())))
+    assert(QueryParser(queryStr) == Left((Seq(Seq("TEST 01"),
+      Seq("TEST 02")), Seq())))
   }
   it should "do more complex disjunctions" in {
-    val queryStr = "('TEST 01' AND 'TEST 02') OR ('TEST 03') OR ('TEST 04' AND 'TEST 05' AND 'TEST 06')"
-    assert(QueryParser(queryStr) == Left((Seq(Seq("TEST 01", "TEST 02"), Seq("TEST 03"), Seq("TEST 04", "TEST 05", "TEST 06")), Seq())))
+    val queryStr = "('TEST 01' AND 'TEST 02') OR ('TEST 03') OR " +
+      "('TEST 04' AND 'TEST 05' AND 'TEST 06')"
+    assert(QueryParser(queryStr) == Left((Seq(Seq("TEST 01", "TEST 02"),
+      Seq("TEST 03"), Seq("TEST 04", "TEST 05", "TEST 06")), Seq())))
   }
   it should "parse simple negative disjunctions" in {
     val queryStr = "('TEST 01') - 'TEST 02'"
-    assert(QueryParser(queryStr) == Left((Seq(Seq("TEST 01")), Seq(Seq("TEST 02")))))
+    assert(QueryParser(queryStr) == Left((Seq(Seq("TEST 01")),
+      Seq(Seq("TEST 02")))))
   }
   it should "parse more complex negative disjunctions" in {
     val queryStr = "('TEST 01') - ('TEST 02' AND 'TEST 03') OR ('TEST 04')"
-    assert(QueryParser(queryStr) == Left((Seq(Seq("TEST 01")), Seq(Seq("TEST 02", "TEST 03"), Seq("TEST 04")))))
+    assert(QueryParser(queryStr) == Left((Seq(Seq("TEST 01")),
+      Seq(Seq("TEST 02", "TEST 03"), Seq("TEST 04")))))
   }
 }
